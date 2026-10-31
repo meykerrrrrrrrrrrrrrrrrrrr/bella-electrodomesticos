@@ -104,8 +104,8 @@
       </div>
     </section>
 
-    <!-- BARRA DE BÚSQUEDA Y FILTRADO POR TIPO Y PRECIO -->
-    <section class="sand-card filter-bar" aria-label="Buscador y filtros de productos">
+    <!-- BARRA DE BÚSQUEDA Y FILTRADO POR CATEGORÍA Y PRECIO PERSONALIZADO ($ 1.000 HASTA INFINITO) -->
+    <section class="sand-card filter-bar" id="catalogFilterBar" aria-label="Buscador y filtros de productos">
       <div class="filter-grid-row">
         <input
           type="text"
@@ -114,9 +114,41 @@
           placeholder="Buscar por televisor, nevera, parlante, cafetera, marca, SKU o promoción..."
         />
 
-        <div class="price-range-pill">
-          <span>Precio máx: <strong id="priceMaxDisplay" style="color:var(--color-coral-pulse);">$ 25.000.000 COP</strong></span>
-          <input type="range" id="priceRangeSlider" min="1500000" max="25000000" step="250000" value="25000000" />
+        <!-- Filtro de Precio por Dígitos Personalizados: Desde $ 1.000 hasta Infinito (∞) -->
+        <div class="price-custom-inputs-box" aria-label="Filtro de precio por dígitos desde 1.000 hasta infinito">
+          <div class="price-digit-group">
+            <label for="priceMinInput">Desde $</label>
+            <input
+              type="text"
+              id="priceMinInput"
+              class="price-digit-field"
+              inputmode="numeric"
+              value="1.000"
+              placeholder="1.000"
+              title="Escribe el precio mínimo en Pesos Colombianos (desde $ 1.000 COP)"
+            />
+          </div>
+          <span style="font-weight:700; color:#666;">—</span>
+          <div class="price-digit-group">
+            <label for="priceMaxInput">Hasta $</label>
+            <input
+              type="text"
+              id="priceMaxInput"
+              class="price-digit-field"
+              inputmode="numeric"
+              value=""
+              placeholder="∞ Infinito (Sin límite)"
+              title="Escribe el precio máximo en COP o déjalo vacío para Infinito (∞)"
+            />
+          </div>
+          <button
+            type="button"
+            id="btnPriceInfinity"
+            class="infinity-badge-btn active"
+            title="Establecer precio máximo en Infinito (Sin límite superior)"
+          >
+            ∞ Infinito
+          </button>
         </div>
 
         <select id="sortSelect" class="pill-input" style="cursor:pointer; font-weight:700;">
@@ -134,25 +166,33 @@
       <!-- Filtros Rápidos por Categoría y Precio en COP -->
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.06);">
         <div class="chips-row" id="categoryChips">
-          <button class="filter-chip active" data-cat="all">Todas las Líneas (16)</button>
-          <button class="filter-chip" data-cat="televisores">Televisores (4)</button>
-          <button class="filter-chip" data-cat="neveras">Neveras (4)</button>
-          <button class="filter-chip" data-cat="parlantes">Parlantes (4)</button>
-          <button class="filter-chip" data-cat="otros">Cocina & Hogar (4)</button>
+          <button type="button" class="filter-chip active" data-cat="all">Todas las Líneas (16)</button>
+          <button type="button" class="filter-chip" data-cat="televisores">📺 Televisores (4)</button>
+          <button type="button" class="filter-chip" data-cat="neveras">🧊 Neveras (4)</button>
+          <button type="button" class="filter-chip" data-cat="parlantes">🔊 Parlantes (4)</button>
+          <button type="button" class="filter-chip" data-cat="otros">☕ Cocina & Hogar (4)</button>
         </div>
 
         <div class="chips-row" id="priceQuickChips">
-          <button class="filter-chip active" data-min="0" data-max="25000000">Cualquier precio</button>
-          <button class="filter-chip" data-min="0" data-max="5000000">Hasta $ 5M COP</button>
-          <button class="filter-chip" data-min="5000000" data-max="10000000">$ 5M – $ 10M COP</button>
-          <button class="filter-chip" data-min="10000000" data-max="25000000">+$ 10M COP</button>
+          <button type="button" class="filter-chip active" data-min="1000" data-max="Infinity">Desde $ 1.000 hasta ∞</button>
+          <button type="button" class="filter-chip" data-min="1000" data-max="5000000">$ 1.000 – $ 5M COP</button>
+          <button type="button" class="filter-chip" data-min="5000000" data-max="10000000">$ 5M – $ 10M COP</button>
+          <button type="button" class="filter-chip" data-min="10000000" data-max="Infinity">+$ 10M hasta ∞</button>
         </div>
 
-        <div id="resultsCounter" style="font-size:13px; font-weight:700;">
-          16 productos encontrados
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span id="priceMaxDisplay" style="font-size:12px; font-weight:700; color:var(--color-coral-pulse);">
+            Rango: $ 1.000 COP → ∞ Infinito
+          </span>
+          <div id="resultsCounter" style="font-size:13px; font-weight:700;">
+            16 productos encontrados
+          </div>
         </div>
       </div>
     </section>
+
+    <!-- BANNER DE CATEGORÍA SELECCIONADA (APARECE AL FILTRAR TELEVISORES, NEVERAS, PARLANTES O COCINA) -->
+    <div id="activeCategoryBanner" class="category-active-banner" style="display:none;"></div>
 
     <!-- CONTENEDOR DE SECCIONES SEPARADAS POR LÍNEA -->
     <div id="catalogDisplayContainer"></div>

@@ -48,6 +48,7 @@
 
   /* Layout */
   --page-max-width: 1200px;
+  --card-padding: 24px;
 }
 
 /* ================= RESET & BASE ================= */
@@ -73,20 +74,31 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  transform: translateY(0);
+  animation: bellaPageFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bellaPageFadeIn {
+  from {
+    opacity: 0.01;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 body.page-ready {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 
 body.page-leaving {
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 0.22s ease-in, transform 0.22s ease-in;
+  opacity: 0.92;
+  transform: translateY(-2px);
+  transition: opacity 0.14s ease, transform 0.14s ease;
 }
 
 img {
@@ -107,12 +119,20 @@ a {
   padding: 0 var(--spacing-16);
 }
 
-/* ================= HEADER & NAVIGATION RESPONSIVE ================= */
+/* ================= HEADER & NAVIGATION RESPONSIVE (AUTO-HIDE ON SCROLL DOWN) ================= */
 .site-header {
   position: sticky;
   top: var(--spacing-16);
   z-index: 200;
   margin-bottom: var(--spacing-24);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+  will-change: transform, opacity;
+}
+
+.site-header.header-hidden {
+  transform: translateY(-145%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .nav-bar {
@@ -125,6 +145,7 @@ a {
   justify-content: space-between;
   gap: var(--spacing-16);
   position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .brand-link {
@@ -174,47 +195,175 @@ a {
   flex-shrink: 0;
 }
 
-/* Botón Hamburguesa Móvil */
+/* Botón Hamburguesa Móvil con Animación de 3 Barras a X */
 .mobile-nav-toggle {
   display: none;
-  background: none;
-  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background-color: var(--color-warm-canvas);
+  border: 1px solid rgba(0, 0, 0, 0.14);
   cursor: pointer;
-  padding: 8px;
-  font-size: 24px;
+  padding: 0;
+  font-size: 20px;
   color: var(--color-ink-black);
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease;
+  position: relative;
+  z-index: 215;
 }
 
+.mobile-nav-toggle:hover {
+  background-color: var(--color-sand-beige);
+}
+
+.mobile-nav-toggle.is-active {
+  background-color: var(--color-ink-black);
+  color: var(--color-pristine-surface);
+  border-color: var(--color-ink-black);
+  transform: rotate(90deg);
+}
+
+.hamburger-box {
+  width: 18px;
+  height: 14px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.hamburger-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background-color: currentColor;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, width 0.25s ease;
+  transform-origin: center;
+}
+
+.mobile-nav-toggle.is-active .hamburger-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.mobile-nav-toggle.is-active .hamburger-line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.mobile-nav-toggle.is-active .hamburger-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Backdrop Suave para el Menú Móvil */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 190;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s ease;
+}
+
+.mobile-menu-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Cajón Desplegable Móvil con Animación Elástica y Cascada */
 .mobile-menu-drawer {
-  display: none;
+  display: flex;
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   left: 0;
   right: 0;
   background-color: var(--color-pristine-surface);
-  border-radius: var(--radius-cards);
-  padding: var(--spacing-20);
-  border: 1px solid var(--color-sand-beige);
+  border-radius: 16px;
+  padding: 0 var(--spacing-20);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   flex-direction: column;
-  gap: var(--spacing-12);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  gap: 6px;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.16);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(-14px) scale(0.97);
+  transform-origin: top right;
+  transition:
+    opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    max-height 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.3s ease,
+    visibility 0.32s;
+  z-index: 210;
 }
 
 .mobile-menu-drawer.open {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  max-height: 540px;
+  padding: var(--spacing-20);
+  transform: translateY(0) scale(1);
 }
 
 .mobile-menu-drawer a {
-  padding: 8px 12px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: transparent;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.mobile-menu-drawer.open a {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mobile-menu-drawer.open a:nth-child(1) { transition-delay: 0.03s; }
+.mobile-menu-drawer.open a:nth-child(2) { transition-delay: 0.06s; }
+.mobile-menu-drawer.open a:nth-child(3) { transition-delay: 0.09s; }
+.mobile-menu-drawer.open a:nth-child(4) { transition-delay: 0.12s; }
+.mobile-menu-drawer.open a:nth-child(5) { transition-delay: 0.15s; }
+.mobile-menu-drawer.open a:nth-child(6) { transition-delay: 0.18s; }
+.mobile-menu-drawer.open a:nth-child(7) { transition-delay: 0.21s; }
+
+.mobile-menu-drawer a::after {
+  content: '→';
+  font-size: 13px;
+  opacity: 0.45;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .mobile-menu-drawer a:hover,
 .mobile-menu-drawer a.active {
   background-color: var(--color-warm-canvas);
   color: var(--color-coral-pulse);
+}
+
+.mobile-menu-drawer a:hover::after,
+.mobile-menu-drawer a.active::after {
+  transform: translateX(4px);
+  opacity: 1;
 }
 
 /* ================= BOTONES PÍLDORA & BADGES ================= */
@@ -422,13 +571,22 @@ a {
   flex-direction: column;
   gap: var(--spacing-16);
   margin-bottom: var(--spacing-40);
+  position: relative;
 }
 
 .filter-grid-row {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 0.9fr auto;
+  grid-template-columns: 1.35fr 1.6fr 0.85fr auto;
   gap: var(--spacing-12);
   align-items: center;
+}
+
+.table-control-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
+  gap: var(--spacing-12);
+  align-items: center;
+  margin-bottom: var(--spacing-16);
 }
 
 .pill-input {
@@ -441,6 +599,76 @@ a {
   font-family: inherit;
   font-size: 14px;
   outline: none;
+}
+
+/* Filtro de Precio Personalizado ($ 1.000 hasta Infinito) */
+.price-custom-inputs-box {
+  background-color: var(--color-pristine-surface);
+  border: 1px solid var(--color-ink-black);
+  border-radius: 16px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.price-digit-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.price-digit-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.price-digit-field {
+  width: 100%;
+  min-width: 90px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink-black);
+  background-color: var(--color-warm-canvas);
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.price-digit-field:focus {
+  border-color: var(--color-coral-pulse);
+  background-color: #ffffff;
+}
+
+.infinity-badge-btn {
+  border-radius: 999px;
+  padding: 6px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--color-ink-black);
+  background-color: var(--color-warm-canvas);
+  color: var(--color-ink-black);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.infinity-badge-btn:hover,
+.infinity-badge-btn.active {
+  background-color: var(--color-coral-pulse);
+  border-color: var(--color-coral-pulse);
+  color: #ffffff;
 }
 
 .price-range-pill {
@@ -489,6 +717,20 @@ a {
 .filter-chip.active {
   background-color: var(--color-coral-pulse);
   color: var(--color-pristine-surface);
+}
+
+/* Banner activo cuando se filtra una categoría específica */
+.category-active-banner {
+  background-color: var(--color-pristine-surface);
+  border: 2px solid var(--color-coral-pulse);
+  border-radius: var(--radius-cards);
+  padding: 14px 20px;
+  margin-bottom: var(--spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 /* ================= TABLAS RESPONSIVAS ================= */
@@ -780,18 +1022,23 @@ a {
     display: none;
   }
   .mobile-nav-toggle {
-    display: block;
+    display: inline-flex;
   }
   .product-grid-4col {
     grid-template-columns: repeat(2, 1fr);
   }
-  .filter-grid-row {
+  .filter-grid-row,
+  .table-control-row {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
-  .filter-grid-row {
+  :root {
+    --card-padding: 18px;
+  }
+  .filter-grid-row,
+  .table-control-row {
     grid-template-columns: 1fr;
   }
   .product-grid-4col {

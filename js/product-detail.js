@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Breadcrumbs
   const breadcrumbCat = document.getElementById('breadcrumbCategory');
   if (breadcrumbCat) {
-    breadcrumbCat.innerHTML = `<a href="tienda.html#sec-${product.category}">${product.categoryLabel}</a>`;
+    breadcrumbCat.innerHTML = `<a href="tienda.html?cat=${product.category}#sec-${product.category}">${product.categoryLabel}</a>`;
   }
   const breadcrumbName = document.getElementById('breadcrumbProductName');
   if (breadcrumbName) {

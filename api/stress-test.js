@@ -13,7 +13,13 @@ module.exports = (req, res) => {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const persistChanges = Boolean(body.persistChanges);
-    const report = runEnterpriseStressTest573({ persistChanges });
+    const report = runEnterpriseStressTest573({
+      persistChanges,
+      clientes: Number(body.clientes) || 10000,
+      facturacion: Number(body.facturacion) || 250,
+      administracion: Number(body.administracion) || 350,
+      root: Number(body.root) || 25
+    });
     res.status(200).json(report);
   } catch (err) {
     res.status(500).json({ error: err.message });

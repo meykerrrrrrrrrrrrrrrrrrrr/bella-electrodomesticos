@@ -12,11 +12,15 @@ const AuthRoles = {
     this.enforcePageGuard();
     this.updateNavigationLinks();
     this.injectRoleSwitcher();
+    this.setupMobileMenuAndAutoHideHeader();
   },
 
   getCurrentPage() {
     const path = window.location.pathname;
-    const filename = path.substring(path.lastIndexOf('/') + 1) || 'index.html';
+    let filename = path.substring(path.lastIndexOf('/') + 1) || 'index.html';
+    if (filename && !filename.includes('.')) {
+      filename = filename + '.html';
+    }
     return filename;
   },
 
@@ -82,30 +86,30 @@ const AuthRoles = {
       // Cliente: SOLO INICIO Y TIENDA
       linksHtml = `
         <li><a href="${root}index.html" class="nav-item-link ${this.getCurrentPage() === 'index.html' ? 'active' : ''}">Inicio</a></li>
-        <li><a href="${prefix}tienda.html" class="nav-item-link ${this.getCurrentPage() === 'tienda.html' ? 'active' : ''}">Tienda & Catálogo</a></li>
-        <li><a href="${prefix}tienda.html#sec-televisores" class="nav-item-link">Televisores</a></li>
-        <li><a href="${prefix}tienda.html#sec-neveras" class="nav-item-link">Neveras</a></li>
-        <li><a href="${prefix}tienda.html#sec-parlantes" class="nav-item-link">Parlantes</a></li>
-        <li><a href="${prefix}tienda.html#sec-otros" class="nav-item-link">Cocina</a></li>
+        <li><a href="${prefix}tienda.html?cat=all" data-cat-nav="all" class="nav-item-link ${this.getCurrentPage() === 'tienda.html' ? 'active' : ''}">Tienda & Catálogo</a></li>
+        <li><a href="${prefix}tienda.html?cat=televisores#sec-televisores" data-cat-nav="televisores" class="nav-item-link">Televisores</a></li>
+        <li><a href="${prefix}tienda.html?cat=neveras#sec-neveras" data-cat-nav="neveras" class="nav-item-link">Neveras</a></li>
+        <li><a href="${prefix}tienda.html?cat=parlantes#sec-parlantes" data-cat-nav="parlantes" class="nav-item-link">Parlantes</a></li>
+        <li><a href="${prefix}tienda.html?cat=otros#sec-otros" data-cat-nav="otros" class="nav-item-link">Cocina</a></li>
       `;
     } else if (roleId === 'facturero') {
       // Facturero: PEDIDOS Y FACTURACIÓN
       linksHtml = `
         <li><a href="${prefix}pedidos.html" class="nav-item-link ${this.getCurrentPage() === 'pedidos.html' ? 'active' : ''}" style="color:var(--color-coral-pulse); font-weight:700;">🧾 Pedidos & Facturación</a></li>
-        <li><a href="${prefix}tienda.html" class="nav-item-link ${this.getCurrentPage() === 'tienda.html' ? 'active' : ''}">Catálogo de Consulta</a></li>
+        <li><a href="${prefix}tienda.html?cat=all" data-cat-nav="all" class="nav-item-link ${this.getCurrentPage() === 'tienda.html' ? 'active' : ''}">Catálogo de Consulta</a></li>
       `;
     } else if (roleId === 'inventario') {
       // Inventario: INVENTARIO, OFERTAS Y FINANZAS
       linksHtml = `
         <li><a href="${prefix}inventario.html" class="nav-item-link ${this.getCurrentPage() === 'inventario.html' ? 'active' : ''}" style="color:var(--color-coral-pulse); font-weight:700;">📦 Inventario & Ofertas</a></li>
         <li><a href="${prefix}finanzas.html" class="nav-item-link ${this.getCurrentPage() === 'finanzas.html' ? 'active' : ''}">Finanzas & Gráficas</a></li>
-        <li><a href="${prefix}tienda.html" class="nav-item-link">Vista Tienda</a></li>
+        <li><a href="${prefix}tienda.html?cat=all" data-cat-nav="all" class="nav-item-link">Vista Tienda</a></li>
       `;
     } else if (roleId === 'admin') {
       // Administrador: TODO
       linksHtml = `
         <li><a href="${root}index.html" class="nav-item-link ${this.getCurrentPage() === 'index.html' ? 'active' : ''}">Inicio</a></li>
-        <li><a href="${prefix}tienda.html" class="nav-item-link ${this.getCurrentPage() === 'tienda.html' ? 'active' : ''}">Tienda</a></li>
+        <li><a href="${prefix}tienda.html?cat=all" data-cat-nav="all" class="nav-item-link ${this.getCurrentPage() === 'tienda.html' ? 'active' : ''}">Tienda</a></li>
         <li><a href="${prefix}pedidos.html" class="nav-item-link ${this.getCurrentPage() === 'pedidos.html' ? 'active' : ''}">Pedidos</a></li>
         <li><a href="${prefix}inventario.html" class="nav-item-link ${this.getCurrentPage() === 'inventario.html' ? 'active' : ''}">Inventario & Ofertas</a></li>
         <li><a href="${prefix}finanzas.html" class="nav-item-link ${this.getCurrentPage() === 'finanzas.html' ? 'active' : ''}">Finanzas</a></li>
@@ -117,33 +121,124 @@ const AuthRoles = {
     if (mobileDrawer) {
       if (roleId === 'cliente') {
         mobileDrawer.innerHTML = `
-          <a href="${root}index.html">Inicio</a>
-          <a href="${prefix}tienda.html">Tienda & Catálogo</a>
-          <a href="${prefix}tienda.html#sec-televisores">Televisores</a>
-          <a href="${prefix}tienda.html#sec-neveras">Neveras</a>
-          <a href="${prefix}tienda.html#sec-parlantes">Parlantes</a>
-          <a href="${prefix}tienda.html#sec-otros">Cocina & Hogar</a>
+          <a href="${root}index.html"><span>🏠 Inicio</span></a>
+          <a href="${prefix}tienda.html?cat=all" data-cat-nav="all"><span>🛍️ Tienda & Catálogo Completo</span></a>
+          <a href="${prefix}tienda.html?cat=televisores#sec-televisores" data-cat-nav="televisores"><span>📺 Televisores OLED & QLED</span></a>
+          <a href="${prefix}tienda.html?cat=neveras#sec-neveras" data-cat-nav="neveras"><span>🧊 Neveras & Refrigeración</span></a>
+          <a href="${prefix}tienda.html?cat=parlantes#sec-parlantes" data-cat-nav="parlantes"><span>🔊 Parlantes & Audio Hi-Fi</span></a>
+          <a href="${prefix}tienda.html?cat=otros#sec-otros" data-cat-nav="otros"><span>☕ Cocina & Hogar Inteligente</span></a>
         `;
       } else if (roleId === 'facturero') {
         mobileDrawer.innerHTML = `
-          <a href="${prefix}pedidos.html">🧾 Módulo de Pedidos & Facturas DIAN</a>
-          <a href="${prefix}tienda.html">Consulta de Catálogo</a>
+          <a href="${prefix}pedidos.html"><span>🧾 Módulo de Pedidos & Facturas DIAN</span></a>
+          <a href="${prefix}tienda.html?cat=all" data-cat-nav="all"><span>🛍️ Consulta de Catálogo</span></a>
         `;
       } else if (roleId === 'inventario') {
         mobileDrawer.innerHTML = `
-          <a href="${prefix}inventario.html">📦 Inventario, Bodegas & Ofertas</a>
-          <a href="${prefix}finanzas.html">Finanzas & Gráficas</a>
-          <a href="${prefix}tienda.html">Vista Tienda</a>
+          <a href="${prefix}inventario.html"><span>📦 Inventario, Bodegas & Ofertas</span></a>
+          <a href="${prefix}finanzas.html"><span>📊 Finanzas & Gráficas</span></a>
+          <a href="${prefix}tienda.html?cat=all" data-cat-nav="all"><span>🛍️ Vista Tienda</span></a>
         `;
       } else if (roleId === 'admin') {
         mobileDrawer.innerHTML = `
-          <a href="${root}index.html">Inicio</a>
-          <a href="${prefix}tienda.html">Tienda & Catálogo</a>
-          <a href="${prefix}pedidos.html">🧾 Pedidos & Facturación</a>
-          <a href="${prefix}inventario.html">📦 Inventario & Ofertas</a>
-          <a href="${prefix}finanzas.html">📊 Finanzas & Reportes</a>
+          <a href="${root}index.html"><span>🏠 Inicio</span></a>
+          <a href="${prefix}tienda.html?cat=all" data-cat-nav="all"><span>🛍️ Tienda & Catálogo</span></a>
+          <a href="${prefix}pedidos.html"><span>🧾 Pedidos & Facturación</span></a>
+          <a href="${prefix}inventario.html"><span>📦 Inventario & Ofertas</span></a>
+          <a href="${prefix}finanzas.html"><span>📊 Finanzas & Reportes</span></a>
         `;
       }
+    }
+  },
+
+  // 2.5. Animación Fluida de Menú Móvil + Auto-Ocultamiento de Barra Superior al Bajar
+  setupMobileMenuAndAutoHideHeader() {
+    const oldBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    const header = document.querySelector('.site-header');
+
+    // Crear backdrop para el menú móvil
+    let backdrop = document.getElementById('mobileMenuBackdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'mobileMenuBackdrop';
+      backdrop.className = 'mobile-menu-backdrop';
+      document.body.appendChild(backdrop);
+    }
+
+    if (oldBtn && drawer) {
+      // Clonar el botón para eliminar listeners inline duplicados en las páginas HTML
+      const mobileBtn = oldBtn.cloneNode(false);
+      mobileBtn.innerHTML = `
+        <span class="hamburger-box" aria-hidden="true">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </span>
+      `;
+      oldBtn.parentNode.replaceChild(mobileBtn, oldBtn);
+
+      const closeMenu = () => {
+        drawer.classList.remove('open');
+        mobileBtn.classList.remove('is-active');
+        mobileBtn.setAttribute('aria-expanded', 'false');
+        backdrop.classList.remove('open');
+      };
+
+      const toggleMenu = (e) => {
+        if (e) e.stopPropagation();
+        const willOpen = !drawer.classList.contains('open');
+        drawer.classList.toggle('open', willOpen);
+        mobileBtn.classList.toggle('is-active', willOpen);
+        mobileBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        backdrop.classList.toggle('open', willOpen);
+        if (willOpen && header) {
+          header.classList.remove('header-hidden');
+        }
+      };
+
+      mobileBtn.addEventListener('click', toggleMenu);
+      backdrop.addEventListener('click', closeMenu);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu();
+      });
+
+      // Cerrar el menú suavemente al pulsar cualquier opción
+      drawer.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (a) closeMenu();
+      });
+    }
+
+    // Auto-ocultar la barra superior (.site-header) cuando el usuario baja haciendo scroll
+    // para que los botones nunca estorben la vista, y mostrarla al subir
+    if (header) {
+      let lastScrollY = window.scrollY || 0;
+      let ticking = false;
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            const currentY = window.scrollY || 0;
+            const delta = currentY - lastScrollY;
+            const isDrawerOpen = drawer && drawer.classList.contains('open');
+
+            if (currentY <= 50) {
+              header.classList.remove('header-hidden');
+            } else if (delta > 5 && currentY > 65 && !isDrawerOpen) {
+              // Usuario bajando: ocultar barra para no estorbar la vista
+              header.classList.add('header-hidden');
+            } else if (delta < -7) {
+              // Usuario subiendo: volver a mostrar barra suavemente
+              header.classList.remove('header-hidden');
+            }
+
+            lastScrollY = currentY;
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
     }
   },
 

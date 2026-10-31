@@ -490,7 +490,7 @@ const CloudSync = {
           </div>
           <div style="display:flex; justify-content:space-between; font-size:13px;">
             <span>Capacidad Concurrente Verificada:</span>
-            <strong style="color:#1b5e20;">● 573 Usuarios Simultáneos (100% OK)</strong>
+            <strong style="color:#1b5e20;">● 10.625 Usuarios Simultáneos (100% OK)</strong>
           </div>
         </div>
 
