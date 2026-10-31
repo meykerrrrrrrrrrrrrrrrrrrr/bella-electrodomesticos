@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Página No Encontrada | bella Electrodomésticos Colombia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .error-404-wrapper {
+      min-height: calc(100vh - 180px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-40, 40px) var(--spacing-20, 20px);
+    }
+
+    .error-404-card {
+      background-color: var(--color-sand-beige, #d5cec0);
+      border-radius: var(--radius-cards, 12px);
+      padding: var(--spacing-48, 48px);
+      max-width: 780px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .error-code-giant {
+      font-size: clamp(72px, 12vw, 136px);
+      font-weight: 700;
+      letter-spacing: -6px;
+      line-height: 0.9;
+      color: var(--color-ink-black, #000000);
+      margin: 12px 0;
+    }
+
+    .error-code-giant span {
+      color: var(--color-coral-pulse, #f04923);
+    }
+
+    .error-diag-box {
+      background-color: var(--color-pristine-surface, #ffffff);
+      border-radius: var(--radius-cards, 12px);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .error-diag-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-warm-canvas, #ebeadf);
+      gap: 8px;
+    }
+
+    .error-diag-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .error-nav-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .error-404-card {
+        grid-template-columns: 1fr;
+        padding: 28px 20px;
+      }
+    }
+  </style>
+</head>
+<body class="page-ready">
+
+  <!-- HEADER COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="/index.html" class="brand-link" id="brandHomeLink">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <li><a href="/index.html" class="nav-item-link">Inicio</a></li>
+          <li><a href="/pages/tienda.html" class="nav-item-link">Tienda & Catálogo</a></li>
+          <li><a href="/pages/pedidos.html" class="nav-item-link">Pedidos</a></li>
+          <li><a href="/pages/inventario.html" class="nav-item-link">Inventario</a></li>
+          <li><a href="/pages/finanzas.html" class="nav-item-link">Finanzas</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <span class="cloud-sync-dot-btn" title="🟢 En Línea | Nube Sincronizada">
+          <span class="sync-dot"></span>
+        </span>
+      </div>
+    </header>
+  </div>
+
+  <!-- CONTENIDO 404 PERSONALIZADO -->
+  <main class="page-container error-404-wrapper">
+    <section class="error-404-card">
+      <div>
+        <span class="bestseller-badge coral">ERROR HTTP 404 — RUTA NO ENCONTRADA</span>
+        <div class="error-code-giant">4<span>0</span>4</div>
+        <h1 style="font-size: 28px; font-weight: 700; letter-spacing: -1px; margin-bottom: 12px;">
+          Esta coordenada no existe en nuestra tienda.
+        </h1>
+        <p style="font-size: 15px; color: #333; line-height: 1.5; max-width: 48ch;">
+          El enlace o archivo que intentaste abrir fue movido o no existe. No te preocupes: toda la base de datos de pedidos, bodegas y catálogo en Pesos Colombianos ($ COP) sigue intacta y sincronizada en tiempo real.
+        </p>
+
+        <div class="error-nav-grid">
+          <a href="/index.html" class="pill-btn coral" id="btnGoHome">🏠 Ir al Inicio</a>
+          <a href="/pages/tienda.html" class="pill-btn" id="btnGoStore">🛍️ Ver Catálogo ($ COP)</a>
+          <a href="/pages/pedidos.html" class="pill-btn" id="btnGoOrders">🧾 Facturación</a>
+          <a href="/pages/inventario.html" class="pill-btn" id="btnGoInv">📦 Bodegas</a>
+        </div>
+      </div>
+
+      <div class="error-diag-box">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="font-size:20px;">🧭</span>
+          <strong style="font-size:15px; letter-spacing:-0.4px;">Diagnóstico del Sistema</strong>
+        </div>
+
+        <div class="error-diag-row">
+          <span style="color:#666;">Ruta solicitada:</span>
+          <strong id="missingPathLabel" style="font-family:monospace; font-size:12px; color:#b00020; word-break:break-all;">/ruta-desconocida</strong>
+        </div>
+
+        <div class="error-diag-row">
+          <span style="color:#666;">Base de Datos Nube:</span>
+          <strong style="color:#1b5e20;">● Sincronizada (100%)</strong>
+        </div>
+
+        <div class="error-diag-row">
+          <span style="color:#666;">Integridad de Cuentas:</span>
+          <strong>Verificada sin pérdidas</strong>
+        </div>
+
+        <div class="error-diag-row">
+          <span style="color:#666;">Bodegas Operativas:</span>
+          <strong>BOG · MED · CALI · BAQ</strong>
+        </div>
+
+        <div style="margin-top:8px; padding:12px; background:var(--color-warm-canvas, #ebeadf); border-radius:8px; font-size:12px; color:#444; line-height:1.4;">
+          💡 <strong>Sugerencia:</strong> Si escribiste la dirección manualmente, verifica que no tenga errores ortográficos o regresa al catálogo principal.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos Colombia — Plataforma Cloud Multi-Dispositivo.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      const pathEl = document.getElementById('missingPathLabel');
+      if (pathEl) {
+        pathEl.textContent = window.location.pathname || '/404';
+      }
+      // Adaptar rutas relativas si se abre en subcarpeta
+      const isPages = window.location.pathname.includes('/pages/');
+      if (isPages) {
+        document.getElementById('btnGoHome').href = '../index.html';
+        document.getElementById('brandHomeLink').href = '../index.html';
+        document.getElementById('btnGoStore').href = 'tienda.html';
+        document.getElementById('btnGoOrders').href = 'pedidos.html';
+        document.getElementById('btnGoInv').href = 'inventario.html';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bella Electrodomésticos — Tienda & Catálogo Oficial Colombia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .store-hero-banner {
+      background-color: var(--color-sand-beige);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      margin-bottom: var(--spacing-32);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-20);
+      flex-wrap: wrap;
+    }
+
+    .store-hero-banner h1 {
+      font-size: var(--text-display);
+      font-weight: 700;
+      letter-spacing: -1.8px;
+      line-height: 1.15;
+      margin-top: var(--spacing-8);
+      margin-bottom: var(--spacing-8);
+    }
+
+    .section-stack {
+      margin-bottom: var(--spacing-64);
+      scroll-margin-top: 100px;
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-24);
+      border-bottom: 2px solid var(--color-sand-beige);
+      padding-bottom: var(--spacing-12);
+      flex-wrap: wrap;
+      gap: var(--spacing-8);
+    }
+
+    .section-title-row h2 {
+      font-size: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -1.2px;
+    }
+
+    .section-eyebrow {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-coral-pulse);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="../index.html" class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <!-- Inyectado dinámicamente según el Rol del Usuario por auth-roles.js -->
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Abrir Menú">☰</button>
+      </div>
+
+      <!-- Menú Desplegable Móvil -->
+      <div class="mobile-menu-drawer" id="mobileDrawer">
+        <!-- Inyectado dinámicamente según el Rol por auth-roles.js -->
+      </div>
+    </header>
+  </div>
+
+  <main class="page-container">
+    <!-- BANNER DE ENCABEZADO DE TIENDA -->
+    <section class="store-hero-banner">
+      <div>
+        <span class="bestseller-badge">Catálogo Oficial Colombia 2026</span>
+        <h1>Tienda de Electrodomésticos</h1>
+        <p style="color:#333; max-width:58ch; font-size:15px;">
+          Fotografías reales de catálogo, precios en Pesos Colombianos ($ COP), ofertas activas asignadas por bodega y especificaciones técnicas completas. Selecciona cualquier producto para ver su ficha y colores disponibles.
+        </p>
+      </div>
+      <div>
+        <span style="font-size:13px; font-weight:700; color:#555; display:block; margin-bottom:4px;">Disponibilidad inmediata:</span>
+        <strong style="font-size:14px; color:#1b5e20;">● 4 Centros de Despacho Nacionales</strong>
+      </div>
+    </section>
+
+    <!-- BARRA DE BÚSQUEDA Y FILTRADO POR TIPO Y PRECIO -->
+    <section class="sand-card filter-bar" aria-label="Buscador y filtros de productos">
+      <div class="filter-grid-row">
+        <input
+          type="text"
+          id="shopSearchInput"
+          class="pill-input"
+          placeholder="Buscar por televisor, nevera, parlante, cafetera, marca, SKU o promoción..."
+        />
+
+        <div class="price-range-pill">
+          <span>Precio máx: <strong id="priceMaxDisplay" style="color:var(--color-coral-pulse);">$ 25.000.000 COP</strong></span>
+          <input type="range" id="priceRangeSlider" min="1500000" max="25000000" step="250000" value="25000000" />
+        </div>
+
+        <select id="sortSelect" class="pill-input" style="cursor:pointer; font-weight:700;">
+          <option value="featured">Ordenar: Destacados bella</option>
+          <option value="price-asc">Precio: Menor a Mayor ($ COP)</option>
+          <option value="price-desc">Precio: Mayor a Menor ($ COP)</option>
+          <option value="rating-desc">Mejor Calificados (★)</option>
+          <option value="discount-desc">Mayor Descuento Promocional</option>
+          <option value="stock-desc">Mayor Stock Disponible</option>
+        </select>
+
+        <button class="pill-btn" id="resetFiltersBtn">Limpiar Filtros</button>
+      </div>
+
+      <!-- Filtros Rápidos por Categoría y Precio en COP -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.06);">
+        <div class="chips-row" id="categoryChips">
+          <button class="filter-chip active" data-cat="all">Todas las Líneas (16)</button>
+          <button class="filter-chip" data-cat="televisores">Televisores (4)</button>
+          <button class="filter-chip" data-cat="neveras">Neveras (4)</button>
+          <button class="filter-chip" data-cat="parlantes">Parlantes (4)</button>
+          <button class="filter-chip" data-cat="otros">Cocina & Hogar (4)</button>
+        </div>
+
+        <div class="chips-row" id="priceQuickChips">
+          <button class="filter-chip active" data-min="0" data-max="25000000">Cualquier precio</button>
+          <button class="filter-chip" data-min="0" data-max="5000000">Hasta $ 5M COP</button>
+          <button class="filter-chip" data-min="5000000" data-max="10000000">$ 5M – $ 10M COP</button>
+          <button class="filter-chip" data-min="10000000" data-max="25000000">+$ 10M COP</button>
+        </div>
+
+        <div id="resultsCounter" style="font-size:13px; font-weight:700;">
+          16 productos encontrados
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENEDOR DE SECCIONES SEPARADAS POR LÍNEA -->
+    <div id="catalogDisplayContainer"></div>
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast-notice" id="toastNotice"></div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos Colombia. Catálogo Oficial & Tienda.
+      </div>
+      <div style="display:flex; gap:16px;">
+        <a href="../index.html">Inicio</a>
+        <a href="tienda.html">Tienda</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/shared-data.js"></script>
+  <script src="../js/cloud-sync.js"></script>
+  <script src="../js/auth-roles.js"></script>
+  <script src="../js/tienda.js"></script>
+  <script>
+    const mobileBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (mobileBtn && drawer) {
+      mobileBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+    }
+  </script>
+</body>
+</html>

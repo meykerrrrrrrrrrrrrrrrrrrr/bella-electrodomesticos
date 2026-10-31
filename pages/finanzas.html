@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bella Electrodomésticos — Finanzas, Gráficas & Descarga de Datos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    .fin-header-banner {
+      background-color: var(--color-sand-beige);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      margin-bottom: var(--spacing-32);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-20);
+      flex-wrap: wrap;
+    }
+
+    .fin-kpis-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-40);
+    }
+
+    .fin-kpi-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-20);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+    }
+
+    .fin-kpi-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+    }
+
+    .fin-kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1.4px;
+      margin-top: 4px;
+    }
+
+    .fin-kpi-sub {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* Gráficas 2x2 */
+    .charts-grid-2x2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-24);
+      margin-bottom: var(--spacing-40);
+    }
+
+    .chart-box-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--card-padding);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-16);
+      padding-bottom: var(--spacing-12);
+      border-bottom: 1px solid var(--color-sand-beige);
+    }
+
+    .chart-box-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    .chart-canvas-container {
+      position: relative;
+      height: 280px;
+      width: 100%;
+    }
+
+    /* Caja de Descarga de Datos */
+    .downloads-action-banner {
+      background-color: var(--color-periwinkle);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      margin-bottom: var(--spacing-40);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-24);
+      flex-wrap: wrap;
+    }
+
+    .downloads-buttons-cluster {
+      display: flex;
+      gap: var(--spacing-12);
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1100px) {
+      .fin-kpis-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .charts-grid-2x2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .fin-kpis-grid {
+        grid-template-columns: 1fr;
+      }
+      .chart-canvas-container {
+        height: 240px;
+      }
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printableFinancialReportArea,
+      #printableFinancialReportArea * {
+        visibility: visible;
+      }
+      #printableFinancialReportArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="../index.html" class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <!-- Inyectado dinámicamente por auth-roles.js -->
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Abrir Menú">☰</button>
+      </div>
+
+      <!-- Menú Desplegable Móvil -->
+      <div class="mobile-menu-drawer" id="mobileDrawer">
+        <!-- Inyectado dinámicamente por auth-roles.js -->
+      </div>
+    </header>
+  </div>
+
+  <main class="page-container">
+    <!-- BANNER PRINCIPAL DE FINANZAS -->
+    <section class="fin-header-banner">
+      <div>
+        <span class="bestseller-badge">Panel Financiero & Contable</span>
+        <h1 style="font-size:32px; font-weight:700; letter-spacing:-1.5px; margin: 8px 0;">
+          Finanzas, Gráficas y Reportes
+        </h1>
+        <p style="color:#333; max-width:65ch; font-size:15px;">
+          Auditoría de ingresos, márgenes de rentabilidad neta por línea, evolución mensual y descarga consolidada de toda la información en formatos Excel (CSV) y JSON.
+        </p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="pill-btn coral" id="btnDownloadPdfReportTop">📥 Descargar Reporte en PDF</button>
+        <button class="pill-btn" id="btnDownloadExcel">📊 Descargar Excel Completo</button>
+        <button class="pill-btn" id="btnDownloadJson">💾 Descargar JSON Maestro</button>
+      </div>
+    </section>
+
+    <!-- CINCO KPIS FINANCIEROS CLAVE -->
+    <section class="fin-kpis-grid">
+      <div class="fin-kpi-card">
+        <span class="fin-kpi-label">INGRESOS TOTALES</span>
+        <div class="fin-kpi-value" id="kpiRevenueVal">$0.00</div>
+        <span class="fin-kpi-sub" id="kpiRevenueSub">Acumulado anual estimado</span>
+      </div>
+
+      <div class="fin-kpi-card">
+        <span class="fin-kpi-label">GANANCIA NETA</span>
+        <div class="fin-kpi-value" id="kpiProfitVal" style="color:var(--color-coral-pulse);">$0.00</div>
+        <span class="fin-kpi-sub" id="kpiProfitSub">Margen bruto deducido</span>
+      </div>
+
+      <div class="fin-kpi-card">
+        <span class="fin-kpi-label">MARGEN GLOBAL</span>
+        <div class="fin-kpi-value" id="kpiMarginVal">0.0%</div>
+        <span class="fin-kpi-sub" style="color:#1b5e20;">Rentabilidad promedio</span>
+      </div>
+
+      <div class="fin-kpi-card">
+        <span class="fin-kpi-label">UNIDADES VENDIDAS</span>
+        <div class="fin-kpi-value" id="kpiUnitsSoldVal">0</div>
+        <span class="fin-kpi-sub">Total 16 referencias</span>
+      </div>
+
+      <div class="fin-kpi-card">
+        <span class="fin-kpi-label">VALUACIÓN DE INVENTARIO</span>
+        <div class="fin-kpi-value" id="kpiInventoryValuation">$0.00</div>
+        <span class="fin-kpi-sub">Costo de reposición</span>
+      </div>
+    </section>
+
+    <!-- CUADRÍCULA DE 4 GRÁFICAS INTERACTIVAS -->
+    <section class="charts-grid-2x2">
+      <!-- Gráfica 1: Ingresos vs Ganancia Mensual -->
+      <div class="chart-box-card">
+        <div class="chart-box-header">
+          <div>
+            <h2 class="chart-box-title">Ingresos vs. Ganancia Mensual ($ COP)</h2>
+            <p style="font-size:13px; color:#555;">Evolución de ventas y margen neto a lo largo del año</p>
+          </div>
+          <span class="bestseller-badge">12 Meses</span>
+        </div>
+        <div class="chart-canvas-container">
+          <canvas id="monthlyTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfica 2: Participación de Ingresos por Línea de Producto -->
+      <div class="chart-box-card">
+        <div class="chart-box-header">
+          <div>
+            <h2 class="chart-box-title">Ventas por Línea de Producto</h2>
+            <p style="font-size:13px; color:#555;">Distribución proporcional de ingresos generados</p>
+          </div>
+          <span class="bestseller-badge">4 Líneas</span>
+        </div>
+        <div class="chart-canvas-container">
+          <canvas id="categoryShareChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfica 3: Margen de Rentabilidad por Categoría -->
+      <div class="chart-box-card">
+        <div class="chart-box-header">
+          <div>
+            <h2 class="chart-box-title">Margen de Rentabilidad por Categoría (%)</h2>
+            <p style="font-size:13px; color:#555;">Porcentaje de ganancia sobre el precio de venta</p>
+          </div>
+          <span class="bestseller-badge">% Margen</span>
+        </div>
+        <div class="chart-canvas-container">
+          <canvas id="marginCategoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfica 4: Stock por Bodega Regional -->
+      <div class="chart-box-card">
+        <div class="chart-box-header">
+          <div>
+            <h2 class="chart-box-title">Unidades Físicas por Bodega Regional</h2>
+            <p style="font-size:13px; color:#555;">Concentración logística en Centro, Norte, Sur y Costa</p>
+          </div>
+          <span class="bestseller-badge">Logística</span>
+        </div>
+        <div class="chart-canvas-container">
+          <canvas id="warehouseStockChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANNER DE ACCIONES DE DESCARGA DE DATOS -->
+    <section class="downloads-action-banner">
+      <div>
+        <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.8px; margin-bottom:4px;">
+          Descarga y Respaldo Completo de Datos
+        </h2>
+        <p style="font-size:14px; color:#222; max-width:55ch;">
+          Exporta todos los registros de inventario, transacciones, finanzas y costos para análisis en Excel, PowerBI o archivo local.
+        </p>
+      </div>
+
+      <div class="downloads-buttons-cluster">
+        <button class="pill-btn coral" id="btnDownloadPdfReport">📥 Descargar Reporte Ejecutivo en PDF</button>
+        <button class="pill-btn" id="btnDownloadExcel2">📊 Exportar Todo a Excel (.CSV)</button>
+        <button class="pill-btn" id="btnDownloadJson2">💾 Dump JSON Maestro</button>
+        <button class="pill-btn" id="btnPrintReport">🖨️ Imprimir Reporte</button>
+        <button class="pill-btn" id="btnResetDatabase" style="background:#fff; border-color:#991b1b; color:#991b1b;">🔄 Resetear Base de Datos</button>
+      </div>
+    </section>
+
+    <!-- CENTRO DE PRUEBAS DE CARGA Y ESTRÉS EMPRESARIAL (573 USUARIOS CONCURRENTES) -->
+    <section class="pristine-card no-print" id="stressTestSection" style="padding:var(--spacing-32); margin-bottom:var(--spacing-40); border:2px solid var(--color-ink-black); background:#ffffff; border-radius:var(--radius-cards);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:20px;">
+        <div>
+          <span class="bestseller-badge coral">Benchmark & Capacidad Cloud</span>
+          <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.8px; margin-top:6px;">
+            Prueba de Estrés Empresarial: 573 Usuarios Concurrentes en Vivo
+          </h2>
+          <p style="font-size:14px; color:#555; max-width:72ch; margin-top:4px;">
+            Simula en paralelo la carga real de una empresa con <strong>500 Clientes</strong> comprando, <strong>30 en Facturación</strong> emitiendo facturas DIAN, <strong>40 en Administración</strong> auditando las 4 bodegas y <strong>3 Usuarios Root</strong> aplicando ofertas y reconciliando la base de datos en la nube sin llenar el almacenamiento.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <button class="pill-btn coral" id="btnRunStressTest573">
+            ⚡ Ejecutar Prueba (573 Usuarios a la Vez)
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de los 4 Roles Simultáneos -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px; margin-bottom:20px;">
+        <div class="sand-card" style="padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-size:14px;">👥 500 Clientes</strong>
+            <span class="bestseller-badge" id="stStatusClients" style="background:#1b5e20; color:#fff;">Listo</span>
+          </div>
+          <p style="font-size:12px; color:#555; margin-bottom:8px;">Consultas de catálogo y órdenes simultáneas en 4 bodegas.</p>
+          <div style="background:#e2ddd2; height:8px; border-radius:999px; overflow:hidden;">
+            <div id="stBarClients" style="width:100%; height:100%; background:var(--color-coral-pulse); transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <div class="sand-card" style="padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-size:14px;">🧾 30 en Facturación</strong>
+            <span class="bestseller-badge" id="stStatusBilling" style="background:#1b5e20; color:#fff;">Listo</span>
+          </div>
+          <p style="font-size:12px; color:#555; margin-bottom:8px;">300 transiciones de estado y facturación electrónica DIAN.</p>
+          <div style="background:#e2ddd2; height:8px; border-radius:999px; overflow:hidden;">
+            <div id="stBarBilling" style="width:100%; height:100%; background:#1e3a5f; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <div class="sand-card" style="padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-size:14px;">📦 40 en Administración</strong>
+            <span class="bestseller-badge" id="stStatusAdmin" style="background:#1b5e20; color:#fff;">Listo</span>
+          </div>
+          <p style="font-size:12px; color:#555; margin-bottom:8px;">Auditoría de valor al detal, costo y ajustes en BOG/MED/CALI/BAQ.</p>
+          <div style="background:#e2ddd2; height:8px; border-radius:999px; overflow:hidden;">
+            <div id="stBarAdmin" style="width:100%; height:100%; background:#0f766e; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <div class="sand-card" style="padding:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-size:14px;">🛡️ 3 Usuarios Root</strong>
+            <span class="bestseller-badge" id="stStatusRoot" style="background:#1b5e20; color:#fff;">Listo</span>
+          </div>
+          <p style="font-size:12px; color:#555; margin-bottom:8px;">Ofertas por línea, compactación y reconciliación global.</p>
+          <div style="background:#e2ddd2; height:8px; border-radius:999px; overflow:hidden;">
+            <div id="stBarRoot" style="width:100%; height:100%; background:#000000; transition:width 0.3s ease;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultados de Telemetría de la Prueba -->
+      <div id="stressTestResultsBox" style="background:var(--color-warm-canvas); border-radius:10px; padding:18px; display:grid; grid-template-columns:repeat(auto-fit, minmax(175px, 1fr)); gap:14px; border:1px solid #d5cec0;">
+        <div>
+          <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Capacidad Concurrente</span>
+          <div id="stMetricUsers" style="font-size:22px; font-weight:700; color:#000;">573 Usuarios (100% OK)</div>
+          <small style="font-size:11px; color:#1b5e20; font-weight:700;">0 errores · 0 caídas</small>
+        </div>
+        <div>
+          <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Rendimiento (Throughput)</span>
+          <div id="stMetricRps" style="font-size:22px; font-weight:700; color:var(--color-coral-pulse);">+45,000 ops/seg</div>
+          <small id="stMetricDuration" style="font-size:11px; color:#555;">843 operaciones atómicas</small>
+        </div>
+        <div>
+          <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Latencia p50 / p95 / p99</span>
+          <div id="stMetricLatency" style="font-size:20px; font-weight:700; color:#000;">0.01ms / 0.03ms</div>
+          <small style="font-size:11px; color:#555;">Respuesta instantánea en memoria/red</small>
+        </div>
+        <div>
+          <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Consistencia entre Nodos</span>
+          <div id="stMetricConsistency" style="font-size:20px; font-weight:700; color:#1b5e20;">573 / 573 Iguales</div>
+          <small id="stMetricHash" style="font-size:11px; color:#555; font-family:monospace;">0 discrepancias de cuentas</small>
+        </div>
+        <div>
+          <span style="font-size:11px; font-weight:700; color:#555; text-transform:uppercase;">Optimización Almacenamiento</span>
+          <div id="stMetricStorage" style="font-size:20px; font-weight:700; color:#1b5e20;">99.6% Ahorrado</div>
+          <small id="stMetricStorageSub" style="font-size:11px; color:#555;">Peticiones reducidas con Delta & ETag</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORIAL DE TRANSACCIONES Y PEDIDOS -->
+    <section class="sand-card" style="padding:var(--card-padding); margin-bottom:var(--spacing-64);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:var(--spacing-16);">
+        <div>
+          <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.8px;">Libro Mayor de Transacciones y Ventas</h2>
+          <p style="font-size:14px; color:#555;">Registro cronológico detallado de órdenes procesadas en la tienda.</p>
+        </div>
+        <div id="txCounterText" style="font-size:13px; font-weight:700;">
+          Últimas transacciones sincronizadas
+        </div>
+      </div>
+
+      <div class="table-responsive-wrapper">
+        <table class="bella-table">
+          <thead>
+            <tr>
+              <th>ID Transacción</th>
+              <th>Fecha y Hora</th>
+              <th>Referencia / SKU</th>
+              <th>Producto</th>
+              <th>Línea</th>
+              <th>Color Elegido</th>
+              <th>Cant.</th>
+              <th>Total ($ COP)</th>
+              <th>Ganancia Neta ($ COP)</th>
+              <th>Bodega Origen</th>
+              <th>Canal</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast-notice" id="toastNotice"></div>
+
+  <!-- MODAL DE CENTRO DE REPORTES & EXPORTACIÓN OFICIAL (MODULAR, COMPLETO E IMPRIMIBLE) -->
+  <div id="financialReportModalBackdrop" class="bella-modal-backdrop" style="display:none;">
+    <div class="invoice-modal-content" style="max-width:920px; padding:24px; background:#ffffff; color:#000000;">
+      
+      <!-- BARRA DE SELECCIÓN DE REPORTE Y DESCARGA (NO-PRINT) -->
+      <div class="no-print" style="margin-bottom:20px; border-bottom:2px solid #e2e8f0; padding-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <span class="bestseller-badge">Centro Oficial de Informes & Auditoría</span>
+            <h2 style="font-size:20px; font-weight:700; margin-top:4px;">Exportar Reporte en PDF</h2>
+            <p style="font-size:13px; color:#555;">Elige qué información incluir en el PDF o descarga cada informe por separado:</p>
+          </div>
+          <button class="pill-btn sm" onclick="document.getElementById('financialReportModalBackdrop').style.display='none'">✕ Cerrar</button>
+        </div>
+
+        <!-- Botones de Selección Rápida de Reporte -->
+        <div class="report-type-selector-bar" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+          <button class="report-filter-tab active" data-type="all">📑 Todo el Reporte Completo</button>
+          <button class="report-filter-tab" data-type="finances">💰 Solo Finanzas (Ingresos, Egresos & Ganancia)</button>
+          <button class="report-filter-tab" data-type="inventory">📦 Solo Inventario & Bodegas</button>
+          <button class="report-filter-tab" data-type="orders">🧾 Solo Libro de Pedidos</button>
+          <button class="report-filter-tab" data-type="invoices">🏛️ Compilado Facturas DIAN (Todas en un PDF)</button>
+          <button class="report-filter-tab" data-type="custom">⚙️ Personalizar Casillas</button>
+        </div>
+
+        <!-- Panel de Casillas Personalizables (Aparece al seleccionar Personalizar) -->
+        <div id="customCheckboxesPanel" style="display:none; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div style="font-size:12px; font-weight:700; margin-bottom:8px; color:#334155;">Selecciona las secciones a incluir en el PDF:</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; font-size:12px;">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkKpis" checked /> 5 KPIs Ejecutivos
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkFinances" checked /> Finanzas (Ingresos, Costos, Margen)
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkInventory" checked /> Existencias y Valuación por Bodega
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkOrders" checked /> Libro de Órdenes y Facturación
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="checkbox" id="chkInvoices" /> Facturas DIAN Individuales Detalladas
+            </label>
+          </div>
+        </div>
+
+        <!-- Botones de Acción de Descarga Rápida -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="pill-btn coral" id="btnExecuteSelectedPdf">📥 Descargar PDF del Reporte Seleccionado</button>
+            <button class="pill-btn" id="btnDownloadAllSeparately" style="background:#f8fafc; border-color:#0284c7; color:#0369a1;">🗂️ Descargar Todo por Separado (4 Archivos)</button>
+          </div>
+          <button class="pill-btn ghost" onclick="window.print()">🖨️ Imprimir Selección</button>
+        </div>
+      </div>
+
+      <!-- ÁREA IMPRIMIBLE / RENDERIZABLE PARA PDF (FONDO BLANCO, OPACIDAD 1, ALTA DEFINICIÓN) -->
+      <div id="printableFinancialReportArea" style="background:#ffffff; color:#000000; padding:12px 6px;">
+        <!-- Encabezado Corporativo Oficial -->
+        <div style="border-bottom: 2px solid #000; padding-bottom: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h1 style="font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px; color:#000;">bella electrodomésticos colombia s.a.s.</h1>
+            <p style="margin: 3px 0; color: #444; font-size: 12px;">NIT: 901.845.230-4 | Régimen Común Gran Contribuyente</p>
+            <p style="margin: 0; color: #444; font-size: 12px;">Sede Corporativa: Av. El Dorado #68C-22, Bogotá D.C., Colombia | Tel: +57 (601) 745 0000</p>
+            <p style="margin: 2px 0 0 0; font-weight: 700; color: #000; font-size: 13px;" id="repModalDocumentTitle">INFORME FINANCIERO, CONTABLE & AUDITORÍA MAESTRA</p>
+          </div>
+          <div style="text-align: right;">
+            <span class="bestseller-badge" style="background:#f04923; color:#fff;">DOCUMENTO OFICIAL AUDITADO</span>
+            <div style="font-size: 12px; color: #333; margin-top: 6px;" id="repModalDate">Fecha: 2026-10-30</div>
+            <div style="font-size: 12px; color: #333;">Moneda: <strong>Pesos Colombianos ($ COP)</strong></div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 0: Cuadrícula de los 5 KPIs Ejecutivos -->
+        <div id="secReportKpis" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px;">
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase;">Ingresos Brutos</div>
+            <div style="font-size: 15px; font-weight: 700; margin-top: 4px; color:#000;" id="repModalRevenue">$ 0 COP</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase;">Egresos (Costos)</div>
+            <div style="font-size: 15px; font-weight: 700; margin-top: 4px; color:#b91c1c;" id="repModalCosts">$ 0 COP</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase;">Ganancia Neta</div>
+            <div style="font-size: 15px; font-weight: 700; margin-top: 4px; color: #15803d;" id="repModalProfit">$ 0 COP</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase;">Margen Global</div>
+            <div style="font-size: 15px; font-weight: 700; margin-top: 4px; color: #0284c7;" id="repModalMargin">0.0%</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase;">Valuación Bodegas</div>
+            <div style="font-size: 15px; font-weight: 700; margin-top: 4px; color:#000;" id="repModalValuation">$ 0 COP</div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 1: Rendimiento Comercial, Ingresos y Egresos por Línea de Producto -->
+        <div id="secReportFinances" style="margin-bottom: 22px;">
+          <h3 style="font-size: 13px; font-weight: 700; margin: 14px 0 8px 0; border-bottom: 1px solid #000; padding-bottom: 4px; text-transform: uppercase;">
+            1. Rendimiento Financiero: Ingresos, Egresos (Costo de Mercancía) y Margen por Línea
+          </h3>
+          <div class="invoice-table-wrapper">
+            <table class="invoice-table" style="font-size: 11px;">
+              <thead>
+                <tr>
+                  <th>Línea de Electrodomésticos</th>
+                  <th style="text-align:center;">Unidades</th>
+                  <th style="text-align:right;">Ingresos Totales ($ COP)</th>
+                  <th style="text-align:right;">Egresos / Costos ($ COP)</th>
+                  <th style="text-align:right;">Ganancia Neta ($ COP)</th>
+                  <th style="text-align:center;">% Margen</th>
+                </tr>
+              </thead>
+              <tbody id="repModalCategoryTableBody">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: Distribución y Existencias en Bodegas Regionales -->
+        <div id="secReportInventory" style="margin-bottom: 22px;">
+          <h3 style="font-size: 13px; font-weight: 700; margin: 16px 0 8px 0; border-bottom: 1px solid #000; padding-bottom: 4px; text-transform: uppercase;">
+            2. Inventario Físico & Valuación en Bodegas Regionales de Distribución
+          </h3>
+          <div class="invoice-table-wrapper">
+            <table class="invoice-table" style="font-size: 11px;">
+              <thead>
+                <tr>
+                  <th>Centro Logístico Regional</th>
+                  <th>Ciudad / Cobertura</th>
+                  <th style="text-align:center;">Unidades Físicas</th>
+                  <th style="text-align:right;">Valuación Estimada ($ COP)</th>
+                  <th>Estado Operativo</th>
+                </tr>
+              </thead>
+              <tbody id="repModalHubsTableBody">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: Libro Completo de Órdenes y Facturación Reciente -->
+        <div id="secReportOrders" style="margin-bottom: 22px;">
+          <h3 style="font-size: 13px; font-weight: 700; margin: 16px 0 8px 0; border-bottom: 1px solid #000; padding-bottom: 4px; text-transform: uppercase;">
+            3. Libro de Órdenes y Facturación Procesada (Historial Completo)
+          </h3>
+          <div class="invoice-table-wrapper">
+            <table class="invoice-table" style="font-size: 10px;">
+              <thead>
+                <tr>
+                  <th>ID Pedido</th>
+                  <th>Fecha</th>
+                  <th>Cliente / Razón Social</th>
+                  <th>Ciudad</th>
+                  <th>Producto Referencia</th>
+                  <th style="text-align:center;">Cant.</th>
+                  <th style="text-align:right;">Total ($ COP)</th>
+                  <th>Bodega</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="repModalOrdersTableBody">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 4: COMPILADO DE TODAS LAS FACTURAS ELECTRÓNICAS DIAN -->
+        <div id="secReportInvoicesCompilado" style="display:none; margin-bottom: 22px;">
+          <h3 style="font-size: 13px; font-weight: 700; margin: 16px 0 12px 0; border-bottom: 1px solid #000; padding-bottom: 4px; text-transform: uppercase;">
+            4. Compilado de Facturas Electrónicas de Venta DIAN (NIT: 901.845.230-4)
+          </h3>
+          <div id="repModalCompiledInvoicesContainer">
+            <!-- Facturas DIAN individuales inyectadas dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Certificación y Firmas Oficiales -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 24px; border-top: 1px solid #ccc; padding-top: 14px; font-size: 10px; color: #555; flex-wrap: wrap; gap: 12px;">
+          <div>
+            Certificación DIAN No. 18764002934821 | CUFE: 9f8e7d6c5b4a3210fedcba9876543210<br>
+            Generado automáticamente por bella Core ERP Cloud Colombia. Información auditada conforme a NIIF.
+          </div>
+          <div style="text-align: right;">
+            _______________________________________<br>
+            <strong>Dirección Financiera & Control Contable</strong><br>
+            bella Electrodomésticos S.A.S.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos. Panel Financiero y Analítica Comercial.
+      </div>
+      <div style="display:flex; gap:16px;">
+        <a href="../index.html">Inicio</a>
+        <a href="tienda.html">Tienda</a>
+        <a href="inventario.html">Inventario</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/shared-data.js"></script>
+  <script src="../js/cloud-sync.js"></script>
+  <script src="../js/auth-roles.js"></script>
+  <script src="../js/finanzas.js"></script>
+  <script>
+    const mobileBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (mobileBtn && drawer) {
+      mobileBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+    }
+  </script>
+</body>
+</html>

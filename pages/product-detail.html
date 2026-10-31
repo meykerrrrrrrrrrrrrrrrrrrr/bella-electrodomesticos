@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bella Electrodomésticos — Detalle del Producto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .breadcrumb-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: var(--spacing-24);
+      font-size: 14px;
+      color: #666;
+    }
+
+    .breadcrumb-row a {
+      color: var(--color-ink-black);
+      font-weight: 700;
+    }
+
+    .product-detail-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: var(--spacing-32);
+      align-items: start;
+      margin-bottom: var(--spacing-64);
+    }
+
+    /* Galería Visual Izquierda */
+    .detail-gallery-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--card-padding);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-16);
+    }
+
+    .main-photo-frame {
+      width: 100%;
+      height: 480px;
+      border-radius: var(--radius-cards);
+      overflow: hidden;
+      background-color: var(--color-warm-canvas);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .main-photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 0.3s ease;
+    }
+
+    .photo-caption-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* Información Derecha */
+    .detail-info-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-20);
+    }
+
+    .detail-heading {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -1.4px;
+      margin-top: 6px;
+    }
+
+    .price-box-banner {
+      background-color: var(--color-warm-canvas);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-16) var(--spacing-20);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .price-large {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-coral-pulse);
+      letter-spacing: -1.5px;
+    }
+
+    .color-picker-box {
+      background-color: var(--color-sand-beige);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-20);
+    }
+
+    .color-pills-container {
+      display: flex;
+      gap: var(--spacing-8);
+      flex-wrap: wrap;
+      margin-top: var(--spacing-12);
+    }
+
+    .color-select-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: var(--radius-buttons);
+      padding: 10px 18px;
+      background-color: var(--color-pristine-surface);
+      border: 1px solid var(--color-ink-black);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .color-select-btn.active,
+    .color-select-btn:hover {
+      background-color: var(--color-ink-black);
+      color: var(--color-pristine-surface);
+    }
+
+    .color-indicator-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid var(--color-ink-black);
+      display: inline-block;
+    }
+
+    .specs-table-container {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--color-sand-beige);
+    }
+
+    .spec-table-row {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-16);
+      padding: 12px 0;
+      border-bottom: 1px solid var(--color-warm-canvas);
+      font-size: 14px;
+    }
+
+    .spec-table-row span {
+      color: #555;
+    }
+
+    .spec-table-row strong {
+      color: var(--color-ink-black);
+      text-align: right;
+    }
+
+    .order-customer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .order-inline-grid {
+      display: grid;
+      grid-template-columns: 80px 1fr 1.3fr;
+      gap: var(--spacing-12);
+      align-items: center;
+      margin-top: var(--spacing-8);
+    }
+
+    @media (max-width: 900px) {
+      .product-detail-layout {
+        grid-template-columns: 1fr;
+      }
+      .main-photo-frame {
+        height: 320px;
+      }
+      .detail-heading {
+        font-size: 24px;
+      }
+      .order-inline-grid {
+        grid-template-columns: 1fr;
+      }
+      .order-customer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="../index.html" class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <!-- Inyectado dinámicamente por auth-roles.js -->
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="tienda.html" class="pill-btn sm">← Volver al Catálogo</a>
+        <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Abrir Menú">☰</button>
+      </div>
+
+      <!-- Menú Desplegable Móvil -->
+      <div class="mobile-menu-drawer" id="mobileDrawer">
+        <!-- Inyectado dinámicamente por auth-roles.js -->
+      </div>
+    </header>
+  </div>
+
+  <main class="page-container">
+    <!-- BREADCRUMBS -->
+    <div class="breadcrumb-row">
+      <a href="../index.html">Inicio</a> /
+      <a href="tienda.html">Tienda</a> /
+      <span id="breadcrumbCategory">Categoría</span> /
+      <span id="breadcrumbProductName" style="color:var(--color-ink-black); font-weight:600;">Producto</span>
+    </div>
+
+    <!-- CUADRÍCULA DE DETALLE DE PRODUCTO -->
+    <div class="product-detail-layout">
+      <!-- Columna Izquierda: Fotografía Real en Alta Resolución -->
+      <section class="detail-gallery-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="bestseller-badge" id="productBadgeTag">Bestseller</span>
+          <span style="font-size:13px; font-weight:700;" id="productSkuTag">SKU: --</span>
+        </div>
+
+        <div class="main-photo-frame">
+          <img id="detailMainPhoto" src="" alt="Fotografía del Producto" />
+        </div>
+
+        <div class="photo-caption-info">
+          <span>📷 Fotografía real de catálogo de alta resolución</span>
+          <span id="photoColorIndicator" style="font-weight:700; color:var(--color-coral-pulse);">Color: --</span>
+        </div>
+      </section>
+
+      <!-- Columna Derecha: Información, Colores Disponibles, Especificaciones y Compra -->
+      <section class="detail-info-card">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:13px; font-weight:700; color:var(--color-coral-pulse);" id="productLineLabel">LÍNEA</span>
+            <span style="font-size:13px; font-weight:600;" id="productRatingText">★ 4.9 (340 reseñas)</span>
+          </div>
+          <h1 class="detail-heading" id="productTitle">Cargando producto...</h1>
+          <p style="font-size:15px; color:#444; margin-top:8px; line-height:1.4;" id="productDescription"></p>
+        </div>
+
+        <!-- Banner de Precio y Stock -->
+        <div class="price-box-banner">
+          <div>
+            <span style="font-size:13px; display:block; color:#555;">Precio de Venta Contado</span>
+            <span class="price-large" id="productPrice">$0.00</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:14px; font-weight:700; display:block;" id="productStockTotal">-- uds. en stock</span>
+            <span style="font-size:12px; color:#555;" id="productWarehousesText">Bodegas: Centro, Norte, Sur, Costa</span>
+          </div>
+        </div>
+
+        <!-- Selector de Colores Disponibles -->
+        <div class="color-picker-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:14px; font-weight:700;">Colores y acabados disponibles:</span>
+            <strong id="activeColorNameDisplay" style="color:var(--color-coral-pulse); font-size:14px;">--</strong>
+          </div>
+          <div class="color-pills-container" id="colorOptionsWrap"></div>
+        </div>
+
+        <!-- Especificaciones Técnicas Certificadas -->
+        <div>
+          <h2 style="font-size:18px; font-weight:700; margin-bottom:12px;">Especificaciones Técnicas Certificadas</h2>
+          <div class="specs-table-container" id="specsListWrap"></div>
+        </div>
+
+        <!-- Formulario de Pedido Directo -->
+        <div style="padding-top:12px; border-top:1px solid var(--color-sand-beige);">
+          <span style="font-size:13px; font-weight:700; display:block; margin-bottom:8px;">
+            Registrar Pedido (Transmisión instantánea en la nube a Facturación y Bodega):
+          </span>
+          <div class="order-customer-grid">
+            <input type="text" id="orderCustomerName" class="pill-input" placeholder="Tu Nombre o Razón Social..." value="Alejandro Restrepo" />
+            <input type="text" id="orderCustomerCity" class="pill-input" placeholder="Ciudad de entrega..." value="Bogotá D.C." />
+          </div>
+          <div class="order-inline-grid">
+            <input type="number" id="orderQtyInput" class="pill-input" value="1" min="1" max="10" />
+            <select id="orderHubSelect" class="pill-input" style="cursor:pointer; font-weight:700;">
+              <option value="Centro">Bodega Centro (Bogotá)</option>
+              <option value="Norte">Bodega Norte (Medellín)</option>
+              <option value="Sur">Bodega Sur (Cali)</option>
+              <option value="Costa">Bodega Costa (Barranquilla)</option>
+            </select>
+            <button class="pill-btn coral" id="btnPlaceOrder">Comprar Ahora ($ COP)</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast-notice" id="toastNotice"></div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos Colombia. Detalle y especificaciones.
+      </div>
+      <div style="display:flex; gap:16px;">
+        <a href="../index.html">Inicio</a>
+        <a href="tienda.html">Tienda</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/shared-data.js"></script>
+  <script src="../js/cloud-sync.js"></script>
+  <script src="../js/auth-roles.js"></script>
+  <script src="../js/product-detail.js"></script>
+  <script>
+    const mobileBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (mobileBtn && drawer) {
+      mobileBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+    }
+  </script>
+</body>
+</html>

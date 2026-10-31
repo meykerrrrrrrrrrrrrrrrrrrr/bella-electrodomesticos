@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bella Electrodomésticos — Inventario, Bodegas & Asignación de Ofertas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .inv-header-banner {
+      background-color: var(--color-sand-beige);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      margin-bottom: var(--spacing-32);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-20);
+      flex-wrap: wrap;
+    }
+
+    .inv-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-40);
+    }
+
+    .inv-metric-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-24);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+    }
+
+    .inv-metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1.3px;
+      margin-top: 6px;
+    }
+
+    /* MÓDULO DE ASIGNACIÓN DE OFERTAS */
+    .promos-manager-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      margin-bottom: var(--spacing-40);
+      border: 2px solid var(--color-ink-black);
+    }
+
+    .promo-tabs-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--color-warm-canvas);
+      padding-bottom: 12px;
+    }
+
+    .promo-tab-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: var(--radius-buttons);
+      cursor: pointer;
+      color: #666;
+      transition: all 0.15s ease;
+    }
+
+    .promo-tab-btn.active {
+      background-color: var(--color-coral-pulse);
+      color: var(--color-pristine-surface);
+    }
+
+    .promo-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .promo-form-grid .pill-btn {
+      width: 100%;
+      white-space: normal;
+      text-align: center;
+      padding: 12px 14px;
+    }
+
+    /* Hubs */
+    .hubs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-40);
+    }
+
+    .hub-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--card-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--spacing-12);
+    }
+
+    .hub-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hub-name {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .hub-stat-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--color-warm-canvas);
+    }
+
+    .hub-stat-item span {
+      color: #555;
+    }
+
+    .badge-stock-ok {
+      background-color: #e2f5ea;
+      color: #1b5e20;
+      padding: 4px 10px;
+      border-radius: var(--radius-tags);
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .badge-stock-alert {
+      background-color: #fee2e2;
+      color: #991b1b;
+      padding: 4px 10px;
+      border-radius: var(--radius-tags);
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .badge-promo-applied {
+      background-color: #fef2f2;
+      color: var(--color-coral-pulse);
+      border: 1px solid var(--color-coral-pulse);
+      padding: 3px 8px;
+      border-radius: var(--radius-tags);
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .inline-stock-edit {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .inline-stock-edit input {
+      width: 60px;
+      padding: 6px 8px;
+      border-radius: var(--radius-buttons);
+      border: 1px solid var(--color-ink-black);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 1024px) {
+      .inv-metrics-grid,
+      .hubs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .promo-form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .inv-metrics-grid,
+      .hubs-grid,
+      .promo-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="../index.html" class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <!-- Inyectado por auth-roles.js -->
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Abrir Menú">☰</button>
+      </div>
+
+      <!-- Menú Desplegable Móvil -->
+      <div class="mobile-menu-drawer" id="mobileDrawer">
+        <!-- Inyectado por auth-roles.js -->
+      </div>
+    </header>
+  </div>
+
+  <main class="page-container">
+    <!-- ENCABEZADO DE INVENTARIO -->
+    <section class="inv-header-banner">
+      <div>
+        <span class="bestseller-badge">Control Logístico & Promociones Colombia</span>
+        <h1 style="font-size:32px; font-weight:700; letter-spacing:-1.5px; margin: 8px 0;">
+          Inventario y Asignación de Ofertas
+        </h1>
+        <p style="color:#333; max-width:65ch; font-size:15px;">
+          Gestiona las existencias en las 4 bodegas nacionales, ajusta stocks en vivo y asigna descuentos promocionales masivos por línea (Televisores, Neveras, Parlantes, Cocina) o a productos específicos en Pesos Colombianos ($ COP).
+        </p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="pill-btn" id="btnExportInventoryCsv">📥 Exportar Stock a Excel (.CSV)</button>
+        <a href="tienda.html" class="pill-btn coral">Ver Tienda en Vivo</a>
+      </div>
+    </section>
+
+    <!-- MÓDULO DE ASIGNACIÓN DE OFERTAS & DESCUENTOS -->
+    <section class="promos-manager-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+        <div>
+          <span class="bestseller-badge" style="background:#000;">Motor Comercial</span>
+          <h2 style="font-size:22px; font-weight:700; margin-top:4px;">Asignador de Ofertas & Descuentos en Vivo</h2>
+          <p style="font-size:13px; color:#555;">
+            Los descuentos que asignes aquí se actualizan inmediatamente en los celulares de los clientes y en las facturas de ventas.
+          </p>
+        </div>
+        <div id="activeOffersBadge" class="bestseller-badge" style="background:#1b5e20;">
+          4 ofertas activas
+        </div>
+      </div>
+
+      <!-- Pestañas de Modo de Asignación -->
+      <div class="promo-tabs-header">
+        <button class="promo-tab-btn active" id="tabModeLine">Asignar Oferta por Línea Completa</button>
+        <button class="promo-tab-btn" id="tabModeProduct">Asignar Oferta a Producto Específico</button>
+      </div>
+
+      <!-- Formulario Modo 1: Por Línea Completa -->
+      <div id="formSectionLine" class="promo-mode-section">
+        <div class="promo-form-grid">
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Seleccionar Línea:</label>
+            <select id="promoCategorySelect" class="pill-input" style="cursor:pointer; font-weight:700;">
+              <option value="televisores">Línea Televisores & Smart TV (4 modelos)</option>
+              <option value="neveras">Línea Neveras & Refrigeración (4 modelos)</option>
+              <option value="parlantes">Línea Parlantes & Sonido Hi-Fi (4 modelos)</option>
+              <option value="otros">Línea Cocina & Cuidado del Hogar (4 modelos)</option>
+              <option value="all">Todo el Catálogo Completo (16 modelos)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">% Descuento:</label>
+            <select id="promoDiscountPctSelect" class="pill-input" style="cursor:pointer; font-weight:700;">
+              <option value="10">10% de Descuento</option>
+              <option value="15">15% de Descuento</option>
+              <option value="20" selected>20% de Descuento</option>
+              <option value="25">25% de Descuento</option>
+              <option value="30">30% de Descuento</option>
+              <option value="40">40% de Descuento</option>
+              <option value="50">50% de Descuento</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Etiqueta / Motivo Promocional:</label>
+            <input type="text" id="promoBadgeTextInput" class="pill-input" placeholder="Ej. CyberDays 20% OFF, Black Friday, Día Sin IVA..." value="CyberDays 20% OFF" />
+          </div>
+
+          <div>
+            <button class="pill-btn coral" id="btnApplyOfferCategory" style="white-space:nowrap; width:100%;">
+              🔥 Aplicar a la Línea
+            </button>
+          </div>
+
+          <div>
+            <button class="pill-btn" id="btnRemoveOfferCategory" style="white-space:nowrap; width:100%;">
+              Quitar Ofertas
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario Modo 2: Por Producto Específico -->
+      <div id="formSectionProduct" class="promo-mode-section" style="display:none;">
+        <div class="promo-form-grid">
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Seleccionar Producto Específico:</label>
+            <select id="promoSpecificProductSelect" class="pill-input" style="cursor:pointer; font-weight:700;">
+              <!-- Llenado dinámicamente -->
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">% Descuento:</label>
+            <select id="promoSpecificPctSelect" class="pill-input" style="cursor:pointer; font-weight:700;">
+              <option value="10">10% Descuento</option>
+              <option value="15">15% Descuento</option>
+              <option value="20">20% Descuento</option>
+              <option value="25" selected>25% Descuento</option>
+              <option value="30">30% Descuento</option>
+              <option value="40">40% Descuento</option>
+              <option value="50">50% Descuento</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Etiqueta del Producto:</label>
+            <input type="text" id="promoSpecificBadgeInput" class="pill-input" placeholder="Ej. Oferta Flash 25% OFF..." value="Oferta Flash 25% OFF" />
+          </div>
+
+          <div>
+            <button class="pill-btn coral" id="btnApplyOfferProduct" style="white-space:nowrap; width:100%;">
+              🎯 Aplicar al Producto
+            </button>
+          </div>
+
+          <div>
+            <button class="pill-btn" id="btnRemoveOfferProduct" style="white-space:nowrap; width:100%;">
+              Quitar Oferta
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELECTOR DE BODEGA & CONSOLIDADO NACIONAL -->
+    <section class="warehouse-selector-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div>
+          <span class="bestseller-badge" style="background-color:var(--color-ink-black);">Control Multi-Almacén Colombia</span>
+          <h2 style="font-size:22px; font-weight:700; margin-top:4px; letter-spacing:-0.5px;">
+            Selector de Bodega & Valorización de Inventario
+          </h2>
+          <p style="font-size:13px; color:#555; max-width:70ch;">
+            Elige una bodega específica para auditar sus existencias físicas, su valor comercial al detal y costo de reposición, o consulta el consolidado nacional de todas juntas.
+          </p>
+        </div>
+        <div id="activeWarehouseIndicatorBadge" class="bestseller-badge" style="background:#1b5e20; font-size:13px; padding:6px 14px;">
+          🏢 Consolidado: Todas las Bodegas
+        </div>
+      </div>
+
+      <div class="warehouse-selector-tabs" id="warehouseTabsContainer">
+        <button class="warehouse-tab-btn active" data-warehouse="all">
+          🏢 Todas las Bodegas (Consolidado)
+          <span class="badge-pill-count" id="badgeCountAll">0 uds.</span>
+        </button>
+        <button class="warehouse-tab-btn" data-warehouse="Centro">
+          📍 Bodega Centro (Bogotá D.C.)
+          <span class="badge-pill-count" id="badgeCountCentro">0 uds.</span>
+        </button>
+        <button class="warehouse-tab-btn" data-warehouse="Norte">
+          📍 Bodega Norte (Medellín)
+          <span class="badge-pill-count" id="badgeCountNorte">0 uds.</span>
+        </button>
+        <button class="warehouse-tab-btn" data-warehouse="Sur">
+          📍 Bodega Sur (Cali)
+          <span class="badge-pill-count" id="badgeCountSur">0 uds.</span>
+        </button>
+        <button class="warehouse-tab-btn" data-warehouse="Costa">
+          📍 Bodega Costa (Barranquilla)
+          <span class="badge-pill-count" id="badgeCountCosta">0 uds.</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TARJETAS DE MÉTRICAS RÁPIDAS (DINÁMICAS POR BODEGA) -->
+    <section class="inv-metrics-grid">
+      <div class="inv-metric-card">
+        <span style="font-size:12px; color:#555; font-weight:700; text-transform:uppercase;">UNIDADES FÍSICAS EN STOCK</span>
+        <div class="inv-metric-value" id="kpiTotalStock">0</div>
+        <span style="font-size:12px; color:#666;" id="kpiTotalStockSub">Distribuidas en 4 bodegas</span>
+      </div>
+
+      <div class="inv-metric-card">
+        <span style="font-size:12px; color:#555; font-weight:700; text-transform:uppercase;">MONTO TOTAL AL DETAL (VENTA PÚBLICO)</span>
+        <div class="inv-metric-value" id="kpiStockRetailValuation" style="color:var(--color-coral-pulse); font-size:22px;">$ 0 COP</div>
+        <span style="font-size:12px; color:#666;" id="kpiStockRetailSub">Valor comercial total proyectado</span>
+      </div>
+
+      <div class="inv-metric-card">
+        <span style="font-size:12px; color:#555; font-weight:700; text-transform:uppercase;">MONTO TOTAL AL COSTO (INVERSIÓN)</span>
+        <div class="inv-metric-value" id="kpiStockCostValuation" style="font-size:22px;">$ 0 COP</div>
+        <span style="font-size:12px; color:#666;" id="kpiStockCostSub">Valuación al costo de reposición</span>
+      </div>
+
+      <div class="inv-metric-card">
+        <span style="font-size:12px; color:#555; font-weight:700; text-transform:uppercase;">UTILIDAD COMERCIAL POTENCIAL</span>
+        <div class="inv-metric-value" id="kpiStockProfitValuation" style="color:#1b5e20; font-size:22px;">$ 0 COP</div>
+        <span style="font-size:12px; color:#1b5e20; font-weight:700;" id="kpiStockProfitMargin">Margen estimado: 0%</span>
+      </div>
+    </section>
+
+    <!-- HUBS LOGÍSTICOS REGIONALES -->
+    <section style="margin-bottom:var(--spacing-40);">
+      <div style="margin-bottom:var(--spacing-16);">
+        <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.8px;">Centros de Distribución Regionales (Hubs Colombia)</h2>
+        <p style="font-size:14px; color:#555;">Bodegas que surten los pedidos nacionales en Bogotá, Medellín, Cali y Barranquilla.</p>
+      </div>
+      <div class="hubs-grid" id="hubsContainer"></div>
+    </section>
+
+    <!-- TABLA DE INVENTARIO MAESTRO -->
+    <section class="sand-card" style="padding:var(--card-padding); margin-bottom:var(--spacing-64);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:var(--spacing-16);">
+        <div>
+          <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.8px;">Inventario Detallado & Precios en Pesos Colombianos</h2>
+          <p style="font-size:14px; color:#555;">Consulta precios base, descuentos aplicados, precio de venta al público y modifica existencias.</p>
+        </div>
+        <div id="tableCounterText" style="font-size:13px; font-weight:700;">
+          Mostrando 16 de 16 productos
+        </div>
+      </div>
+
+      <!-- Filtros de la Tabla -->
+      <div class="table-control-row">
+        <input type="text" id="invSearchInput" class="pill-input" placeholder="Buscar por SKU, producto o línea..." />
+
+        <!-- Selector Rápido de Bodega en Tabla -->
+        <select id="invWarehouseFilter" class="pill-input" style="cursor:pointer; font-weight:700; background-color:#fff;">
+          <option value="all">🏢 Todas las Bodegas (Consolidado)</option>
+          <option value="Centro">📍 Bodega Centro (Bogotá D.C.)</option>
+          <option value="Norte">📍 Bodega Norte (Medellín)</option>
+          <option value="Sur">📍 Bodega Sur (Cali)</option>
+          <option value="Costa">📍 Bodega Costa (Barranquilla)</option>
+        </select>
+
+        <select id="invCategoryFilter" class="pill-input" style="cursor:pointer; font-weight:700;">
+          <option value="all">Todas las Líneas (16)</option>
+          <option value="televisores">Televisores</option>
+          <option value="neveras">Neveras</option>
+          <option value="parlantes">Parlantes</option>
+          <option value="otros">Cocina & Hogar</option>
+        </select>
+
+        <select id="invStockStatusFilter" class="pill-input" style="cursor:pointer; font-weight:700;">
+          <option value="all">Todos los Niveles</option>
+          <option value="promo">Con Oferta Activa</option>
+          <option value="low">Solo Alerta / Bajo Stock</option>
+          <option value="ok">Stock Saludable (>10)</option>
+        </select>
+
+        <button class="pill-btn" id="btnResetTableFilters">Limpiar</button>
+      </div>
+
+      <!-- Wrapper con Scroll Horizontal Seguro para Móvil -->
+      <div class="table-responsive-wrapper">
+        <table class="bella-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Producto & Referencia</th>
+              <th>Línea</th>
+              <th>Precio al Detal ($ COP)</th>
+              <th>Costo Unit. ($ COP)</th>
+              <th id="thBodegaStock">Stock en Bodega</th>
+              <th>Stock Todos Juntos</th>
+              <th>Monto al Detal ($ COP)</th>
+              <th>Monto al Costo ($ COP)</th>
+              <th>Utilidad Potencial</th>
+              <th>Modificar Existencias</th>
+              <th>Ficha</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody">
+            <!-- Filas dinámicas -->
+          </tbody>
+          <tfoot id="inventoryTableFoot">
+            <!-- Totales consolidados -->
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast-notice" id="toastNotice"></div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos Colombia. Módulo de Inventario & Ofertas.
+      </div>
+      <div style="display:flex; gap:16px;">
+        <a href="tienda.html">Tienda</a>
+        <a href="pedidos.html">Pedidos</a>
+        <a href="finanzas.html">Finanzas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/shared-data.js"></script>
+  <script src="../js/cloud-sync.js"></script>
+  <script src="../js/auth-roles.js"></script>
+  <script src="../js/inventario.js"></script>
+  <script>
+    const mobileBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (mobileBtn && drawer) {
+      mobileBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+    }
+  </script>
+</body>
+</html>

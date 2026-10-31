@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bella Electrodomésticos — Inicio & Presentación Oficial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Estilos específicos para la Presentación / Inicio */
+    .hero-split-section {
+      margin-bottom: var(--spacing-64);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: var(--spacing-24);
+      margin-bottom: var(--spacing-24);
+    }
+
+    .hero-main-banner {
+      position: relative;
+      border-radius: var(--radius-cards);
+      overflow: hidden;
+      min-height: 480px;
+      padding: var(--spacing-40);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: var(--color-sand-beige);
+      background-image: linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.14) 50%, rgba(0,0,0,0.52) 100%),
+        url('https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1400&q=85');
+      background-size: cover;
+      background-position: center;
+      color: var(--color-pristine-surface);
+    }
+
+    .hero-headline {
+      font-size: var(--text-display);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      margin-top: var(--spacing-12);
+      max-width: 520px;
+    }
+
+    .hero-description {
+      font-size: var(--text-subheading);
+      line-height: 1.4;
+      margin-top: var(--spacing-12);
+      max-width: 480px;
+      color: var(--color-pristine-surface);
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-12);
+      margin-top: var(--spacing-24);
+      flex-wrap: wrap;
+    }
+
+    .hero-promo-card {
+      background-color: var(--color-coral-pulse);
+      border-radius: var(--radius-cards);
+      padding: var(--card-padding);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: var(--color-pristine-surface);
+      min-height: 480px;
+    }
+
+    .promo-headline {
+      font-size: var(--text-heading);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: var(--spacing-16);
+    }
+
+    .promo-img-box {
+      margin: var(--spacing-20) 0;
+      border-radius: var(--radius-cards);
+      overflow: hidden;
+      background-color: var(--color-pristine-surface);
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .promo-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .promo-img-box:hover img {
+      transform: scale(1.05);
+    }
+
+    /* Fila de Categorías de Inicio */
+    .categories-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-64);
+    }
+
+    .cat-preview-card {
+      background-color: var(--color-sand-beige);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-24);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 200px;
+      text-decoration: none;
+      color: var(--color-ink-black);
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .cat-preview-card:hover {
+      background-color: var(--color-pristine-surface);
+      transform: translateY(-3px);
+    }
+
+    .cat-icon {
+      font-size: 32px;
+      margin-bottom: var(--spacing-8);
+    }
+
+    .cat-preview-card h3 {
+      font-size: var(--text-heading-sm);
+      font-weight: 700;
+      margin-bottom: var(--spacing-4);
+    }
+
+    .cat-preview-card p {
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* Editorial Lifestyle Scene */
+    .lifestyle-editorial {
+      position: relative;
+      border-radius: var(--radius-cards);
+      overflow: hidden;
+      min-height: 420px;
+      margin-bottom: var(--spacing-64);
+      background-color: var(--color-sand-beige);
+      background-image: url('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1400&q=85');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-40) var(--spacing-20);
+    }
+
+    .editorial-overlay-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      max-width: 560px;
+    }
+
+    .editorial-overlay-card h2 {
+      font-size: var(--text-heading);
+      font-weight: 700;
+      margin-bottom: var(--spacing-12);
+    }
+
+    .editorial-overlay-card p {
+      font-size: 15px;
+      margin-bottom: var(--spacing-20);
+      color: #333;
+    }
+
+    /* Dual Banner: Inspiration & Finanzas */
+    .dual-feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-24);
+      margin-bottom: var(--spacing-64);
+    }
+
+    .periwinkle-card {
+      background-color: var(--color-periwinkle);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 280px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .categories-preview-grid,
+      .dual-feature-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-headline {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER & NAVBAR COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="index.html" class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <!-- Inyectado dinámicamente por auth-roles.js -->
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="pages/tienda.html" class="pill-btn coral sm">Ir a la Tienda →</a>
+        <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Abrir Menú">☰</button>
+      </div>
+
+      <!-- Menú Desplegable Móvil -->
+      <div class="mobile-menu-drawer" id="mobileDrawer">
+        <!-- Inyectado dinámicamente por auth-roles.js -->
+      </div>
+    </header>
+  </div>
+
+  <main class="page-container">
+    <!-- ================= HERO PRESENTACIÓN INICIAL ================= -->
+    <section class="hero-split-section">
+      <div class="hero-grid">
+        <!-- Banner Principal Escénico -->
+        <div class="hero-main-banner">
+          <div>
+            <span class="bestseller-badge">Colección Fits-anywhere™ 2026</span>
+            <h1 class="hero-headline">Electrodomésticos cálidos para el hogar de hoy.</h1>
+            <p class="hero-description">
+              Diseño sereno en tonalidades crema y coral. Televisores OLED 8K, refrigeración French Door inteligente, audio de alta fidelidad y máquinas espresso con fotografías reales y disponibilidad inmediata en nuestras bodegas.
+            </p>
+          </div>
+
+          <div class="hero-cta-group">
+            <a href="pages/tienda.html" class="pill-btn">Explorar Catálogo Completo →</a>
+            <a href="pages/tienda.html#sec-televisores" class="pill-btn coral">Ver Televisores</a>
+          </div>
+        </div>
+
+        <!-- Tarjeta Promocional Destacada (Coral Pulse) -->
+        <aside class="hero-promo-card">
+          <div>
+            <span class="bestseller-badge white">Bestseller del Mes</span>
+            <h2 class="promo-headline">bella PRO Dual-Boiler Espresso Barista</h2>
+          </div>
+
+          <div class="promo-img-box" onclick="window.location.href='pages/product-detail.html?id=otr-02'" title="Ver ficha técnica">
+            <img src="https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=900&q=85" alt="bella PRO Espresso Barista" />
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div>
+              <span style="font-size:20px; font-weight:700; color:#fff;">$ 5.690.000 COP</span>
+              <span style="font-size:13px; text-decoration:line-through; opacity:0.75; display:block;">$ 6.400.000 COP</span>
+            </div>
+            <a href="pages/product-detail.html?id=otr-02" class="pill-btn sm">Ver detalles</a>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Cuadrícula de Acceso a Líneas de Producto -->
+      <div class="categories-preview-grid">
+        <a href="pages/tienda.html#sec-televisores" class="cat-preview-card">
+          <div>
+            <div class="cat-icon">📺</div>
+            <h3>Televisores</h3>
+            <p>OLED 8K, curvas 165Hz & Marcos de Arte</p>
+          </div>
+          <span style="font-weight:700; font-size:13px; color:var(--color-coral-pulse);">Ver 4 Modelos →</span>
+        </a>
+
+        <a href="pages/tienda.html#sec-neveras" class="cat-preview-card">
+          <div>
+            <div class="cat-icon">🧊</div>
+            <h3>Neveras</h3>
+            <p>French Door AI, InstaView & Cavas Sommelier</p>
+          </div>
+          <span style="font-weight:700; font-size:13px; color:var(--color-coral-pulse);">Ver 4 Modelos →</span>
+        </a>
+
+        <a href="pages/tienda.html#sec-parlantes" class="cat-preview-card">
+          <div>
+            <div class="cat-icon">🔊</div>
+            <h3>Parlantes</h3>
+            <p>Torres 1200W, Dolby Atmos & Altavoces 360°</p>
+          </div>
+          <span style="font-weight:700; font-size:13px; color:var(--color-coral-pulse);">Ver 4 Modelos →</span>
+        </a>
+
+        <a href="pages/tienda.html#sec-otros" class="cat-preview-card">
+          <div>
+            <div class="cat-icon">☕</div>
+            <h3>Cocina & Hogar</h3>
+            <p>Espresso comercial, Hornos Dual-Cook & Robótica</p>
+          </div>
+          <span style="font-weight:700; font-size:13px; color:var(--color-coral-pulse);">Ver 4 Modelos →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= EDITORIAL LIFESTYLE SCENE ================= -->
+    <section class="lifestyle-editorial">
+      <div class="editorial-overlay-card">
+        <span class="bestseller-badge" style="margin-bottom:12px;">Calidez & Eficiencia</span>
+        <h2>Diseño doméstico que vive en armonía con tu espacio</h2>
+        <p>
+          Cada línea de producto cuenta con fotografías reales en estudio, especificaciones técnicas certificadas y paleta de colores intercambiable para que elijas el acabado perfecto para tu hogar.
+        </p>
+        <a href="pages/tienda.html" class="pill-btn coral">Ir a la Tienda Online</a>
+      </div>
+    </section>
+
+    <!-- ================= ACCESOS DIRECTOS A INVENTARIO Y FINANZAS ================= -->
+    <section class="dual-feature-grid">
+      <div class="periwinkle-card">
+        <div>
+          <span class="bestseller-badge" style="background:#000;">Cadena de Suministro</span>
+          <h3 style="font-size:24px; font-weight:700; margin:12px 0 8px;">Inventario & Centros de Distribución</h3>
+          <p style="font-size:14px; max-width:44ch;">
+            Consulta el stock disponible en tiempo real en las 4 bodegas nacionales (Bogotá, Medellín, Cali y Barranquilla) con ajuste instantáneo de existencias.
+          </p>
+        </div>
+        <div style="margin-top:20px;">
+          <a href="pages/inventario.html" class="pill-btn">Revisar Inventario Nacional →</a>
+        </div>
+      </div>
+
+      <div class="sand-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <span class="bestseller-badge">Analítica de Negocio</span>
+          <h3 style="font-size:24px; font-weight:700; margin:12px 0 8px;">Finanzas, Gráficas & Descarga de Datos</h3>
+          <p style="font-size:14px; max-width:44ch;">
+            Revisa ingresos mensuales, margen de rentabilidad por categoría, volumen de ventas y descarga todos los reportes en Excel (.csv) o base de datos JSON.
+          </p>
+        </div>
+        <div style="margin-top:20px;">
+          <a href="pages/finanzas.html" class="pill-btn coral">Abrir Panel de Finanzas →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos. Estilo de vida cálido y diseño contemporáneo.
+      </div>
+      <div style="display:flex; gap:16px;">
+        <a href="pages/tienda.html">Tienda</a>
+        <a href="pages/inventario.html">Inventario</a>
+        <a href="pages/finanzas.html">Finanzas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/shared-data.js"></script>
+  <script src="js/cloud-sync.js"></script>
+  <script src="js/auth-roles.js"></script>
+  <script>
+    // Toggle menú móvil
+    const mobileBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (mobileBtn && drawer) {
+      mobileBtn.addEventListener('click', () => {
+        drawer.classList.toggle('open');
+      });
+    }
+  </script>
+</body>
+</html>

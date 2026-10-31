@@ -1,0 +1,21 @@
+{
+  "name": "bella-electrodomesticos-colombia",
+  "version": "5.0.0",
+  "description": "Plataforma Cloud E-Commerce, Facturación DIAN, Inventario Multi-Bodega y Analítica Financiera en Pesos Colombianos ($ COP)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "stress-test": "node stress-test-573.js"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "keywords": [
+    "ecommerce",
+    "colombia",
+    "inventario",
+    "facturacion-dian",
+    "cloud-sync"
+  ],
+  "license": "MIT"
+}

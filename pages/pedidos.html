@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bella Electrodomésticos — Facturación & Despacho de Pedidos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,700;1,9..40,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .orders-hero-banner {
+      background-color: var(--color-sand-beige);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-32);
+      margin-bottom: var(--spacing-32);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-20);
+      flex-wrap: wrap;
+    }
+
+    .orders-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-40);
+    }
+
+    .order-kpi-card {
+      background-color: var(--color-pristine-surface);
+      border-radius: var(--radius-cards);
+      padding: var(--spacing-20);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
+    }
+
+    .order-kpi-val {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1.3px;
+      margin-top: 6px;
+    }
+
+    /* Estados de Pedidos */
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: var(--radius-tags);
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .status-badge.pendiente {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-badge.facturado {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .status-badge.despacho {
+      background-color: #f3e8ff;
+      color: #6b21a8;
+    }
+
+    .status-badge.entregado {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    .status-badge.cancelado {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .order-actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Modal de Factura Electrónica */
+    .invoice-modal-content {
+      background: #ffffff;
+      padding: 32px;
+      border-radius: 12px;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      font-family: inherit;
+    }
+
+    .invoice-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid var(--color-ink-black);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .invoice-table th, .invoice-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .invoice-table th {
+      background-color: var(--color-warm-canvas);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+      .orders-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .orders-kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printableInvoiceArea, #printableInvoiceArea * {
+        visibility: visible;
+      }
+      #printableInvoiceArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER COMPARTIDO -->
+  <div class="page-container site-header">
+    <header class="nav-bar">
+      <a href="../index.html" class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </a>
+
+      <nav>
+        <ul class="nav-links-desktop">
+          <!-- Inyectado por auth-roles.js -->
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Abrir Menú">☰</button>
+      </div>
+
+      <!-- Menú Desplegable Móvil -->
+      <div class="mobile-menu-drawer" id="mobileDrawer">
+        <!-- Inyectado por auth-roles.js -->
+      </div>
+    </header>
+  </div>
+
+  <main class="page-container">
+    <!-- BANNER DE FACTURACIÓN -->
+    <section class="orders-hero-banner">
+      <div>
+        <span class="bestseller-badge">Módulo Oficial de Ventas & DIAN</span>
+        <h1 style="font-size:32px; font-weight:700; letter-spacing:-1.5px; margin: 8px 0;">
+          Gestión de Pedidos y Facturación Electrónica
+        </h1>
+        <p style="color:#333; max-width:65ch; font-size:15px;">
+          Panel para factureros y despachadores. Los pedidos generados por clientes en sus celulares o computadores ingresan aquí en tiempo real por Internet con timbre sonoro.
+        </p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="pill-btn coral" id="btnSimulateOrder">📱 Simular Pedido Móvil Entrante</button>
+      </div>
+    </section>
+
+    <!-- KPIS DE FACTURACIÓN -->
+    <section class="orders-kpi-grid">
+      <div class="order-kpi-card">
+        <span style="font-size:12px; font-weight:700; color:#555;">TOTAL PEDIDOS HOY</span>
+        <div class="order-kpi-val" id="kpiTotalOrders">0</div>
+        <span style="font-size:12px; color:#666;">Órdenes en sistema</span>
+      </div>
+
+      <div class="order-kpi-card">
+        <span style="font-size:12px; font-weight:700; color:#92400e;">PENDIENTES POR FACTURAR</span>
+        <div class="order-kpi-val" id="kpiPendingOrders" style="color:#d97706;">0</div>
+        <span style="font-size:12px; color:#92400e;">Requieren emisión de factura</span>
+      </div>
+
+      <div class="order-kpi-card">
+        <span style="font-size:12px; font-weight:700; color:#0369a1;">FACTURACIÓN TOTAL ($ COP)</span>
+        <div class="order-kpi-val" id="kpiTotalBilledCOP" style="color:var(--color-coral-pulse); font-size:22px;">$ 0 COP</div>
+        <span style="font-size:12px; color:#555;">Incluye IVA 19% Colombia</span>
+      </div>
+
+      <div class="order-kpi-card">
+        <span style="font-size:12px; font-weight:700; color:#15803d;">DESPACHADOS / ENTREGADOS</span>
+        <div class="order-kpi-val" id="kpiDispatchedOrders" style="color:#16a34a;">0</div>
+        <span style="font-size:12px; color:#15803d;">En ruta o completados</span>
+      </div>
+    </section>
+
+    <!-- LISTA DE PEDIDOS -->
+    <section class="sand-card" style="padding:var(--card-padding); margin-bottom:var(--spacing-64);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:var(--spacing-16);">
+        <div>
+          <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.8px;">Libro de Órdenes en Tiempo Real</h2>
+          <p style="font-size:14px; color:#555;">Emite la factura electrónica de venta, cambia estados y autoriza el despacho en bodega.</p>
+        </div>
+        <div id="ordersCounterText" style="font-size:13px; font-weight:700;">
+          Cargando pedidos...
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="table-control-row" style="grid-template-columns: 1.5fr 1fr 1fr auto;">
+        <input type="text" id="orderSearchInput" class="pill-input" placeholder="Buscar por ID (ej. ORD-9128), cliente, teléfono o producto..." />
+
+        <select id="orderStatusFilter" class="pill-input" style="cursor:pointer; font-weight:700;">
+          <option value="all">Todos los Estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Facturado">Facturado</option>
+          <option value="En Despacho">En Despacho</option>
+          <option value="Entregado">Entregado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+
+        <select id="orderHubFilter" class="pill-input" style="cursor:pointer; font-weight:700;">
+          <option value="all">Todas las Bodegas</option>
+          <option value="Centro">Bodega Centro (Bogotá)</option>
+          <option value="Norte">Bodega Norte (Medellín)</option>
+          <option value="Sur">Bodega Sur (Cali)</option>
+          <option value="Costa">Bodega Costa (Barranquilla)</option>
+        </select>
+
+        <button class="pill-btn" id="btnResetOrderFilters">Limpiar</button>
+      </div>
+
+      <!-- Tabla Responsive -->
+      <div class="table-responsive-wrapper">
+        <table class="bella-table">
+          <thead>
+            <tr>
+              <th>ID Pedido / Factura</th>
+              <th>Fecha / Hora</th>
+              <th>Cliente & Destino</th>
+              <th>Producto & Acabado</th>
+              <th>Cant.</th>
+              <th>Total ($ COP)</th>
+              <th>Bodega</th>
+              <th>Estado Actual</th>
+              <th>Acción Facturero</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <!-- Dinámico -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-notice" id="toastNotice"></div>
+
+  <!-- MODAL DE FACTURA FISCAL ELECTRÓNICA DIAN (IMPRIMIBLE) -->
+  <div id="invoiceModalBackdrop" class="bella-modal-backdrop" style="display:none;">
+    <div class="invoice-modal-content" id="printableInvoiceArea">
+      <div class="invoice-header-row">
+        <div>
+          <div style="font-size:24px; font-weight:700; letter-spacing:-0.8px;">bella electrodomésticos s.a.s.</div>
+          <div style="font-size:13px; color:#555;">NIT: 901.845.230-4 | Régimen Común</div>
+          <div style="font-size:12px; color:#555;">Sede Central: Av. El Dorado #68C-22, Bogotá D.C.</div>
+          <div style="font-size:12px; color:#555;">Tel: +57 (601) 745 0000 | info@bellaelectro.com.co</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="bestseller-badge" style="background:#1b5e20;">FACTURA ELECTRÓNICA DE VENTA</span>
+          <div style="font-size:20px; font-weight:700; margin-top:6px;" id="invModalNumber">FE-9128</div>
+          <div style="font-size:12px; color:#555;" id="invModalDate">Fecha: 2026-10-30</div>
+        </div>
+      </div>
+
+      <!-- Datos del Cliente -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:16px; font-size:13px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div><strong>Adquiriente:</strong> <span id="invModalClient">Santiago Restrepo</span></div>
+        <div><strong>Teléfono:</strong> <span id="invModalPhone">+57 315 892 4410</span></div>
+        <div><strong>Ciudad Entrega:</strong> <span id="invModalCity">Bogotá D.C.</span></div>
+        <div><strong>Bodega de Despacho:</strong> <span id="invModalHub">Centro (Bogotá)</span></div>
+        <div><strong>Canal de Venta:</strong> <span id="invModalChannel">Tienda Online</span></div>
+        <div><strong>Medio de Pago:</strong> <span>Transferencia PSE / Tarjeta Crédito</span></div>
+      </div>
+
+      <!-- Tabla de Ítems (Con Scroll Seguro para Móvil) -->
+      <div class="invoice-table-wrapper">
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Descripción del Producto</th>
+              <th>Color / Acabado</th>
+              <th>Cant.</th>
+              <th>Precio Unitario</th>
+              <th>Total ($ COP)</th>
+            </tr>
+          </thead>
+          <tbody id="invModalItemsBody">
+            <!-- Inyectado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Desglose de Impuestos DIAN Colombia -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-top:16px; flex-wrap:wrap; gap:16px;">
+        <div style="font-size:11px; color:#666; max-width:340px; line-height:1.4;">
+          Resolución DIAN No. 18764002934821 de 2026-01-15.<br>
+          Rango autorizado: FE-9000 a FE-99999.<br>
+          CUFE: a7b8c9d0e1f23456789abcdef0123456789abcdef0123456789<br>
+          Representación gráfica de Factura Electrónica de Venta.
+        </div>
+        <div style="min-width:240px; font-size:13px;">
+          <div style="display:flex; justify-content:space-between; padding:4px 0;">
+            <span>Subtotal Antes de IVA:</span>
+            <strong id="invModalSubtotal">$ 0 COP</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #ccc;">
+            <span>IVA (19% Tarifa General):</span>
+            <strong id="invModalTax">$ 0 COP</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:8px 0; font-size:16px; color:var(--color-coral-pulse);">
+            <strong>TOTAL A PAGAR:</strong>
+            <strong id="invModalTotal">$ 0 COP</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:16px; flex-wrap:wrap;" class="no-print">
+        <button class="pill-btn coral" id="btnDownloadInvoicePdf">📥 Descargar Factura en PDF</button>
+        <button class="pill-btn" onclick="window.print()">🖨️ Imprimir Factura Oficial</button>
+        <button class="pill-btn" onclick="document.getElementById('invoiceModalBackdrop').style.display='none'">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="brand-link">
+        bella <span class="brand-dot"></span> electro
+      </div>
+      <div>
+        © 2026 bella Electrodomésticos. Sistema Central de Facturación y Despacho.
+      </div>
+      <div style="display:flex; gap:16px;">
+        <a href="tienda.html">Tienda</a>
+        <a href="inventario.html">Inventario</a>
+        <a href="finanzas.html">Finanzas</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="../js/shared-data.js"></script>
+  <script src="../js/cloud-sync.js"></script>
+  <script src="../js/auth-roles.js"></script>
+  <script src="../js/pedidos.js"></script>
+  <script>
+    const mobileBtn = document.getElementById('mobileNavBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (mobileBtn && drawer) {
+      mobileBtn.addEventListener('click', () => drawer.classList.toggle('open'));
+    }
+  </script>
+</body>
+</html>
