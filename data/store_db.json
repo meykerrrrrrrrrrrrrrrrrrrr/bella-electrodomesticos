@@ -17,14 +17,14 @@
       "promoBadge": "Bestseller 10% OFF",
       "rating": 4.9,
       "reviews": 342,
-      "stock": 28,
+      "stock": 30,
       "minStock": 10,
       "unitsSold": 194,
       "badge": "Bestseller 10% OFF",
       "featured": true,
       "warehouseDistribution": {
         "Norte": 8,
-        "Centro": 12,
+        "Centro": 14,
         "Sur": 5,
         "Costa": 3
       },
@@ -1260,5 +1260,6 @@
       "invoiceNumber": "FE-9124"
     }
   ],
-  "lastUpdated": 1793420872240
+  "stateVersion": 2,
+  "lastUpdated": 1793466572854
 }
