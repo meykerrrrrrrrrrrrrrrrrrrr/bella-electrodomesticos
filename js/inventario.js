@@ -460,14 +460,14 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
       `;
 
-      // Event listener para guardar stock específico
+      // Event listener para guardar stock específico con validación estricta
       const saveBtn = tr.querySelector(`[data-stock-btn="${p.id}"]`);
       if (saveBtn) {
         saveBtn.addEventListener('click', () => {
           const input = tr.querySelector(`#inputStock_${p.id}`);
           const newVal = parseInt(input.value, 10);
-          if (isNaN(newVal) || newVal < 0) {
-            showToast('Por favor ingrese un stock válido mayor o igual a 0.', true);
+          if (isNaN(newVal) || newVal < 0 || newVal > 9999) {
+            showToast('Stock no permitido: debe ser un número entero entre 0 y 9.999 unidades.', true);
             return;
           }
 
@@ -580,8 +580,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnApplyOfferCategory) {
     btnApplyOfferCategory.addEventListener('click', () => {
       const cat = promoCategorySelect.value;
-      const pct = parseInt(promoDiscountPctSelect.value, 10) || 0;
-      const text = promoBadgeTextInput.value.trim() || `${pct}% OFF`;
+      const pct = Math.max(1, Math.min(90, parseInt(promoDiscountPctSelect.value, 10) || 0));
+      const text = (promoBadgeTextInput.value || '').replace(/<[^>]*>/g, '').replace(/[;'"\\$]/g, '').slice(0, 40).trim() || `${pct}% OFF`;
 
       const count = AetherStore.applyOfferToCategory(cat, pct, text);
       const catNames = {
@@ -609,8 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnApplyOfferProduct) {
     btnApplyOfferProduct.addEventListener('click', () => {
       const prodId = promoSpecificProductSelect.value;
-      const pct = parseInt(promoSpecificPctSelect.value, 10) || 0;
-      const text = promoSpecificBadgeInput.value.trim() || `${pct}% OFF`;
+      const pct = Math.max(1, Math.min(90, parseInt(promoSpecificPctSelect.value, 10) || 0));
+      const text = (promoSpecificBadgeInput.value || '').replace(/<[^>]*>/g, '').replace(/[;'"\\$]/g, '').slice(0, 40).trim() || `${pct}% OFF`;
 
       const prod = AetherStore.applyOfferToProduct(prodId, pct, text);
       if (prod) {
@@ -723,8 +723,14 @@ document.addEventListener('DOMContentLoaded', () => {
     populateSpecificProductsDropdown();
   }
 
-  // ==================== EVENT LISTENERS ====================
-  if (searchInput) searchInput.addEventListener('input', renderTable);
+  // ==================== EVENT LISTENERS CON VALIDACIÓN ZERO-TRUST ====================
+  if (searchInput) {
+    searchInput.addEventListener('input', e => {
+      const sanitized = e.target.value.replace(/<[^>]*>/g, '').replace(/[;'"\\$]/g, '').slice(0, 50);
+      if (sanitized !== e.target.value) e.target.value = sanitized;
+      renderTable();
+    });
+  }
   if (catFilter) catFilter.addEventListener('change', renderTable);
   if (statusFilter) statusFilter.addEventListener('change', renderTable);
 

@@ -1,19 +1,26 @@
 /**
- * bella Electrodomésticos Colombia — Motor de Base de Datos Cloud & Local Unificado
- * Soporta ejecución en Vercel Serverless (/tmp + memoria global) y Servidor Node Local (data/store_db.json).
- * Incluye deduplicación por eventId, control de versión (stateVersion) y compactación de almacenamiento.
+ * bella Electrodomésticos Colombia — Motor de Base de Datos Privada del Servidor & Cifrado AES-256-GCM
+ * - La base de datos maestra es 100% privada del servidor (oculta de acceso público web y cifrada en disco).
+ * - Los clientes públicos solo reciben la proyección pública del catálogo (sin costos internos ni historial de órdenes).
+ * - Solo el propietario autenticado mediante variables de entorno del servidor puede consultar la base de datos completa.
  */
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const PRIVATE_SEED = require('./_private_seed');
+const {
+  encryptDatabasePayload,
+  decryptDatabasePayload,
+  validateMutationEvent,
+  getServerSecrets
+} = require('./_security');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const SEED_DB_FILE = path.join(ROOT_DIR, 'data', 'store_db.json');
 const IS_VERCEL = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
-const RUNTIME_DB_FILE = IS_VERCEL
-  ? path.join(os.tmpdir(), 'bella_electro_cloud_db.json')
-  : SEED_DB_FILE;
+const PRIVATE_VAULT_FILE = IS_VERCEL
+  ? path.join(os.tmpdir(), 'bella_private_vault.enc')
+  : path.join(ROOT_DIR, '.private_db', 'bella_private_vault.enc');
 
 // Máximo de transacciones almacenadas en el documento activo para evitar llenar el almacenamiento
 const MAX_STORED_TRANSACTIONS = 600;
@@ -21,14 +28,11 @@ const MAX_PROCESSED_EVENT_IDS = 1200;
 
 function loadSeedData() {
   try {
-    if (fs.existsSync(SEED_DB_FILE)) {
-      const parsed = JSON.parse(fs.readFileSync(SEED_DB_FILE, 'utf8'));
-      if (parsed && Array.isArray(parsed.products) && Array.isArray(parsed.transactions)) {
-        return parsed;
-      }
+    if (PRIVATE_SEED && Array.isArray(PRIVATE_SEED.products) && Array.isArray(PRIVATE_SEED.transactions)) {
+      return JSON.parse(JSON.stringify(PRIVATE_SEED));
     }
   } catch (e) {
-    console.warn('[CloudDB] Error leyendo seed:', e.message);
+    console.warn('[PrivateVaultDB] Error leyendo seed privado:', e.message);
   }
   return { products: [], transactions: [], stateVersion: 1, lastUpdated: Date.now(), processedEventIds: [] };
 }
@@ -40,17 +44,19 @@ function initMemoryStore() {
 
   let data = null;
   try {
-    if (fs.existsSync(RUNTIME_DB_FILE)) {
-      const raw = fs.readFileSync(RUNTIME_DB_FILE, 'utf8');
-      const parsed = JSON.parse(raw);
+    if (fs.existsSync(PRIVATE_VAULT_FILE)) {
+      const raw = fs.readFileSync(PRIVATE_VAULT_FILE, 'utf8');
+      const parsed = decryptDatabasePayload(raw);
       if (parsed && Array.isArray(parsed.products) && Array.isArray(parsed.transactions)) {
         data = parsed;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    // Si la llave cambió o el archivo no existe, inicializa desde el seed privado
+  }
 
   if (!data) {
-    data = JSON.parse(JSON.stringify(loadSeedData()));
+    data = loadSeedData();
   }
 
   if (!data.stateVersion) data.stateVersion = 1;
@@ -58,6 +64,20 @@ function initMemoryStore() {
   if (!Array.isArray(data.processedEventIds)) data.processedEventIds = [];
 
   global.__BELLA_CLOUD_DB__ = data;
+  // Guardar bóveda cifrada inicial si aún no existe en disco
+  if (!fs.existsSync(PRIVATE_VAULT_FILE)) {
+    try {
+      const dir = path.dirname(PRIVATE_VAULT_FILE);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(PRIVATE_VAULT_FILE, encryptDatabasePayload({
+        products: data.products,
+        transactions: data.transactions,
+        stateVersion: data.stateVersion,
+        lastUpdated: data.lastUpdated
+      }), 'utf8');
+    } catch (e) {}
+  }
+
   return data;
 }
 
@@ -66,7 +86,6 @@ function persistStore(db, immediate = false) {
   db.stateVersion = (Number(db.stateVersion) || 1) + 1;
   db.lastUpdated = Date.now();
 
-  // Compactar lista de eventos procesados y transacciones para no llenar el almacenamiento
   if (db.processedEventIds && db.processedEventIds.length > MAX_PROCESSED_EVENT_IDS) {
     db.processedEventIds = db.processedEventIds.slice(-MAX_PROCESSED_EVENT_IDS);
   }
@@ -76,16 +95,16 @@ function persistStore(db, immediate = false) {
 
   const writeToDisk = () => {
     try {
-      const dir = path.dirname(RUNTIME_DB_FILE);
+      const dir = path.dirname(PRIVATE_VAULT_FILE);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      // No escribir processedEventIds gigantes al archivo de disco si no es necesario
       const payloadToSave = {
         products: db.products,
         transactions: db.transactions,
         stateVersion: db.stateVersion,
         lastUpdated: db.lastUpdated
       };
-      fs.writeFileSync(RUNTIME_DB_FILE, JSON.stringify(payloadToSave, null, 2), 'utf8');
+      const encryptedContent = encryptDatabasePayload(payloadToSave);
+      fs.writeFileSync(PRIVATE_VAULT_FILE, encryptedContent, 'utf8');
     } catch (e) {
       // En entornos de solo lectura continúa operando desde memoria global
     }
@@ -103,10 +122,80 @@ function getDb() {
   return initMemoryStore();
 }
 
-function applyMutation(db, event, payload, eventId = null) {
+/**
+ * Proyección pública segura para visitantes de la tienda:
+ * - Oculta costos internos de fabricación (`cost`) y métricas privadas.
+ * - Oculta por completo la tabla `transactions` (órdenes de clientes, teléfonos, facturas DIAN y ganancias).
+ */
+function getPublicCatalogProjection(db) {
+  const safeProducts = (db.products || []).map(p => ({
+    id: p.id,
+    sku: p.sku,
+    name: p.name,
+    lineName: p.lineName,
+    category: p.category,
+    categoryLabel: p.categoryLabel,
+    price: p.price,
+    basePrice: p.basePrice || p.originalPrice || p.price,
+    originalPrice: p.originalPrice || p.basePrice || p.price,
+    discountPercentage: p.discountPercentage || 0,
+    promoBadge: p.promoBadge || null,
+    badge: p.badge || 'Exclusivo',
+    rating: p.rating || 4.9,
+    reviews: p.reviews || 240,
+    stock: p.stock,
+    minStock: p.minStock || 10,
+    warehouseDistribution: p.warehouseDistribution || { Centro: 0, Norte: 0, Sur: 0, Costa: 0 },
+    image: p.image,
+    description: p.description,
+    specs: p.specs || {},
+    colors: p.colors || []
+  }));
+
+  return {
+    upToDate: false,
+    scope: 'public_catalog_only',
+    databasePrivate: true,
+    products: safeProducts,
+    transactions: [], // PRIVADO EN EL SERVIDOR: Nunca expuesto al público
+    stateVersion: db.stateVersion || 1,
+    lastUpdated: db.lastUpdated || Date.now()
+  };
+}
+
+/**
+ * Base de datos privada completa — EXCLUSIVA para el propietario autenticado.
+ */
+function getPrivateOwnerDatabase(db) {
+  const secrets = getServerSecrets();
+  return {
+    upToDate: false,
+    scope: 'owner_private_vault',
+    databasePrivate: true,
+    encryption: 'AES-256-GCM (Bóveda Privada del Servidor)',
+    envConfiguredOnServer: secrets.hasConfiguredEnv,
+    vaultPath: IS_VERCEL ? '/tmp/bella_private_vault.enc (Serverless Private)' : '.private_db/bella_private_vault.enc (Server Private)',
+    products: db.products,
+    transactions: db.transactions,
+    stateVersion: db.stateVersion || 1,
+    lastUpdated: db.lastUpdated || Date.now()
+  };
+}
+
+function applyMutation(db, event, payload, eventId = null, isOwnerAuthenticated = true) {
   if (!event) return false;
 
-  // Deduplicación idempotente por eventId para evitar duplicados en reconexiones
+  // Validación estricta Zero-Trust del evento y todos sus campos
+  const validation = validateMutationEvent(event, payload, isOwnerAuthenticated);
+  if (!validation.valid) {
+    const err = new Error(validation.error || 'Entrada rechazada por validación de seguridad.');
+    err.statusCode = validation.status || 400;
+    throw err;
+  }
+
+  const cleanPayload = validation.sanitizedPayload || payload;
+
+  // Deduplicación idempotente por eventId
   if (eventId) {
     if (!Array.isArray(db.processedEventIds)) db.processedEventIds = [];
     if (db.processedEventIds.includes(eventId)) {
@@ -117,65 +206,73 @@ function applyMutation(db, event, payload, eventId = null) {
 
   let mutated = false;
 
-  if (event === 'NEW_ORDER' && payload && payload.id) {
-    if (!db.transactions.some(t => t.id === payload.id)) {
-      // Guardar solo campos esenciales de la orden (sin basura innecesaria)
+  if (event === 'NEW_ORDER' && cleanPayload && cleanPayload.id) {
+    if (!db.transactions.some(t => t.id === cleanPayload.id)) {
+      const prod = db.products.find(
+        p => p.id === cleanPayload.productId || p.sku === cleanPayload.sku || p.name === cleanPayload.product
+      ) || db.products[0];
+
+      if (!prod) return false;
+
+      // Calcular precios e impuestos estrictamente en el servidor (nunca confiar en precios enviados por el cliente)
+      const qty = Math.max(1, Math.min(10, Number(cleanPayload.qty) || 1));
+      const unitPrice = Number(prod.price) || 0;
+      const unitCost = Number(prod.cost) || Math.round(unitPrice * 0.65);
+      const total = unitPrice * qty;
+      const subtotal = Math.round(total / 1.19);
+      const tax = total - subtotal;
+      const profit = (unitPrice - unitCost) * qty;
+
       const cleanOrder = {
-        id: String(payload.id),
-        productId: payload.productId || '',
-        date: payload.date || new Date().toISOString().slice(0, 16).replace('T', ' '),
-        sku: payload.sku || '',
-        product: payload.product || '',
-        category: payload.category || '',
-        color: payload.color || 'Estándar',
-        qty: Math.max(1, Number(payload.qty) || 1),
-        unitPrice: Number(payload.unitPrice) || 0,
-        subtotal: Number(payload.subtotal) || 0,
-        tax: Number(payload.tax) || 0,
-        total: Number(payload.total) || 0,
-        profit: Number(payload.profit) || 0,
-        hub: payload.hub || 'Centro',
-        customerName: payload.customerName || 'Cliente Particular',
-        customerPhone: payload.customerPhone || '+57 310 000 0000',
-        customerCity: payload.customerCity || 'Bogotá D.C.',
-        channel: payload.channel || 'Web Cloud',
-        status: payload.status || 'Pendiente',
-        invoiceNumber: payload.invoiceNumber || ('FE-' + String(payload.id).replace('ORD-', ''))
+        id: String(cleanPayload.id),
+        productId: prod.id,
+        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        sku: prod.sku,
+        product: prod.name,
+        category: prod.categoryLabel,
+        color: cleanPayload.color || 'Estándar',
+        qty,
+        unitPrice,
+        subtotal,
+        tax,
+        total,
+        profit,
+        hub: cleanPayload.hub || 'Centro',
+        customerName: cleanPayload.customerName || 'Cliente Particular',
+        customerPhone: cleanPayload.customerPhone || '+57 310 000 0000',
+        customerCity: cleanPayload.customerCity || 'Bogotá D.C.',
+        channel: cleanPayload.channel || 'Web Cloud',
+        status: 'Pendiente',
+        invoiceNumber: 'FE-' + String(cleanPayload.id).replace('ORD-', '')
       };
       db.transactions.unshift(cleanOrder);
 
-      const prod = db.products.find(
-        p => p.id === cleanOrder.productId || p.sku === cleanOrder.sku || p.name === cleanOrder.product
-      );
-      if (prod) {
-        const qty = cleanOrder.qty;
-        prod.stock = Math.max(0, (Number(prod.stock) || 0) - qty);
-        prod.unitsSold = (Number(prod.unitsSold) || 0) + qty;
-        if (prod.warehouseDistribution && cleanOrder.hub && prod.warehouseDistribution[cleanOrder.hub] !== undefined) {
-          prod.warehouseDistribution[cleanOrder.hub] = Math.max(0, (Number(prod.warehouseDistribution[cleanOrder.hub]) || 0) - qty);
-        }
+      prod.stock = Math.max(0, (Number(prod.stock) || 0) - qty);
+      prod.unitsSold = (Number(prod.unitsSold) || 0) + qty;
+      if (prod.warehouseDistribution && cleanOrder.hub && prod.warehouseDistribution[cleanOrder.hub] !== undefined) {
+        prod.warehouseDistribution[cleanOrder.hub] = Math.max(0, (Number(prod.warehouseDistribution[cleanOrder.hub]) || 0) - qty);
       }
       mutated = true;
     }
   }
 
-  else if (event === 'ORDER_STATUS_CHANGED' && payload && payload.orderId) {
-    const order = db.transactions.find(t => t.id === payload.orderId);
-    if (order && order.status !== payload.newStatus) {
-      order.status = payload.newStatus;
+  else if (event === 'ORDER_STATUS_CHANGED' && cleanPayload && cleanPayload.orderId) {
+    const order = db.transactions.find(t => t.id === cleanPayload.orderId);
+    if (order && order.status !== cleanPayload.newStatus) {
+      order.status = cleanPayload.newStatus;
       mutated = true;
     }
   }
 
-  else if (event === 'STOCK_UPDATED' && payload && payload.productId) {
-    const prod = db.products.find(p => p.id === payload.productId);
+  else if (event === 'STOCK_UPDATED' && cleanPayload && cleanPayload.productId) {
+    const prod = db.products.find(p => p.id === cleanPayload.productId);
     if (prod) {
-      if (payload.hub && prod.warehouseDistribution) {
-        prod.warehouseDistribution[payload.hub] = Math.max(0, Number(payload.newHubStock) || 0);
+      if (cleanPayload.hub && prod.warehouseDistribution) {
+        prod.warehouseDistribution[cleanPayload.hub] = Math.max(0, Number(cleanPayload.newHubStock) || 0);
         prod.stock = Object.values(prod.warehouseDistribution).reduce((a, b) => a + Number(b || 0), 0);
-      } else if (payload.newStock !== undefined) {
-        const diff = Number(payload.newStock) - (Number(prod.stock) || 0);
-        prod.stock = Math.max(0, Number(payload.newStock));
+      } else if (cleanPayload.newStock !== undefined) {
+        const diff = Number(cleanPayload.newStock) - (Number(prod.stock) || 0);
+        prod.stock = Math.max(0, Number(cleanPayload.newStock));
         if (prod.warehouseDistribution && prod.warehouseDistribution.Centro !== undefined) {
           prod.warehouseDistribution.Centro = Math.max(0, prod.warehouseDistribution.Centro + diff);
         }
@@ -184,13 +281,13 @@ function applyMutation(db, event, payload, eventId = null) {
     }
   }
 
-  else if (event === 'OFFER_APPLIED' && payload) {
-    const pct = Math.max(0, Math.min(90, Number(payload.discountPct !== undefined ? payload.discountPct : payload.pct) || 0));
-    const text = payload.promoBadgeText || (pct > 0 ? `${pct}% OFF` : null);
+  else if (event === 'OFFER_APPLIED' && cleanPayload) {
+    const pct = Math.max(0, Math.min(90, Number(cleanPayload.discountPct) || 0));
+    const text = cleanPayload.promoBadgeText || (pct > 0 ? `${pct}% OFF` : null);
 
-    if (payload.categoryKey) {
+    if (cleanPayload.categoryKey) {
       db.products.forEach(p => {
-        if (payload.categoryKey === 'all' || p.category === payload.categoryKey) {
+        if (cleanPayload.categoryKey === 'all' || p.category === cleanPayload.categoryKey) {
           if (!p.basePrice) p.basePrice = p.originalPrice || p.price;
           p.discountPercentage = pct;
           p.originalPrice = p.basePrice;
@@ -205,8 +302,8 @@ function applyMutation(db, event, payload, eventId = null) {
         }
       });
       mutated = true;
-    } else if (payload.productId) {
-      const prod = db.products.find(p => p.id === payload.productId);
+    } else if (cleanPayload.productId) {
+      const prod = db.products.find(p => p.id === cleanPayload.productId);
       if (prod) {
         if (!prod.basePrice) prod.basePrice = prod.originalPrice || prod.price;
         prod.discountPercentage = pct;
@@ -224,11 +321,11 @@ function applyMutation(db, event, payload, eventId = null) {
     }
   }
 
-  else if (event === 'FULL_STATE_RECONCILE' && payload) {
-    if (Array.isArray(payload.transactions)) {
+  else if (event === 'FULL_STATE_RECONCILE' && cleanPayload) {
+    if (Array.isArray(cleanPayload.transactions)) {
       const txMap = new Map();
       db.transactions.forEach(t => { if (t && t.id) txMap.set(t.id, t); });
-      payload.transactions.forEach(t => {
+      cleanPayload.transactions.forEach(t => {
         if (t && t.id && !txMap.has(t.id)) {
           txMap.set(t.id, t);
           mutated = true;
@@ -257,16 +354,15 @@ function applyMutation(db, event, payload, eventId = null) {
  * - 25 Usuarios Root aplicando ofertas masivas, reconciliando el libro mayor y verificando integridad
  */
 function runEnterpriseStressTest573(options = { persistChanges: false }) {
-  const numClientes = Math.max(1, Number(options.clientes) || 10000);
-  const numFacturacion = Math.max(1, Number(options.facturacion) || 250);
-  const numAdministracion = Math.max(1, Number(options.administracion) || 350);
-  const numRoot = Math.max(1, Number(options.root) || 25);
+  const numClientes = Math.max(1, Math.min(50000, Number(options.clientes) || 10000));
+  const numFacturacion = Math.max(1, Math.min(5000, Number(options.facturacion) || 250));
+  const numAdministracion = Math.max(1, Math.min(5000, Number(options.administracion) || 350));
+  const numRoot = Math.max(1, Math.min(500, Number(options.root) || 25));
   const totalConcurrentUsers = numClientes + numFacturacion + numAdministracion + numRoot;
 
   const startTime = process.hrtime.bigint();
   const baseDb = getDb();
 
-  // Clonar estado en sandbox para evaluar carga extrema sin contaminar con órdenes ficticias a menos que se pida
   const targetDb = options.persistChanges
     ? baseDb
     : JSON.parse(JSON.stringify({
@@ -277,7 +373,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
         processedEventIds: []
       }));
 
-  // Asegurar stock suficiente en las 4 bodegas para soportar +10.000 compras concurrentes en la prueba
   const hubs = ['Centro', 'Norte', 'Sur', 'Costa'];
   const prodById = new Map();
   targetDb.products.forEach(p => {
@@ -292,7 +387,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
     prodById.set(p.id, p);
   });
 
-  // Índices en memoria O(1) para procesar +12.800 operaciones atómicas sin cuellos de botella O(N^2)
   const eventIdSet = new Set(targetDb.processedEventIds || []);
   const txList = targetDb.transactions.slice();
   const txById = new Map();
@@ -318,10 +412,8 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
     Costa: 'Barranquilla'
   };
 
-  // 1. Preparar las 10.625 tareas concurrentes mezcladas como ocurren en producción real
   const tasks = [];
 
-  // 10.000 CLIENTES CONCURRENTES
   for (let i = 1; i <= numClientes; i++) {
     tasks.push({
       role: 'cliente',
@@ -381,7 +473,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
     });
   }
 
-  // 250 EMPLEADOS EN FACTURACIÓN (2.500 actualizaciones de facturas DIAN)
   const statuses = ['Facturado', 'En Despacho', 'Entregado'];
   for (let f = 1; f <= numFacturacion; f++) {
     tasks.push({
@@ -408,7 +499,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
     });
   }
 
-  // 350 EMPLEADOS EN ADMINISTRACIÓN / INVENTARIO
   for (let a = 1; a <= numAdministracion; a++) {
     tasks.push({
       role: 'administracion',
@@ -431,7 +521,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
     });
   }
 
-  // 25 USUARIOS ROOT / SUPERADMIN
   const rootActions = [
     { categoryKey: 'televisores', discountPct: 15, promoBadgeText: 'Promo Corporativa 15% OFF' },
     { categoryKey: 'neveras', discountPct: 12, promoBadgeText: 'Especial Frío 12% OFF' },
@@ -444,14 +533,13 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
       slot: (r * 13) % 97,
       fn: () => {
         const t0 = process.hrtime.bigint();
-        applyMutation(targetDb, 'OFFER_APPLIED', rootActions[(r - 1) % rootActions.length], `ev-root-${r}`);
+        applyMutation(targetDb, 'OFFER_APPLIED', rootActions[(r - 1) % rootActions.length], `ev-root-${r}`, true);
         rootOps++;
         latenciesUs.push(Number(process.hrtime.bigint() - t0) / 1000);
       }
     });
   }
 
-  // Intercalar la ejecución de los 10.625 usuarios para simular tráfico concurrente real
   tasks.sort((x, y) => x.slot - y.slot);
 
   tasks.forEach(task => {
@@ -462,7 +550,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
     }
   });
 
-  // Verificación de consistencia entre los 10.625 dispositivos/nodos virtuales
   const finalStateVersion = (targetDb.stateVersion || 1) + totalConcurrentUsers;
   const totalStockSimulated = targetDb.products.reduce((acc, p) => acc + (Number(p.stock) || 0), 0);
   const simulatedOrdersCount = txList.length;
@@ -490,7 +577,6 @@ function runEnterpriseStressTest573(options = { persistChanges: false }) {
   const totalOps = clientOps + (billingOps * 10) + adminInvOps + rootOps;
   const rps = Math.round((totalOps / Math.max(totalDurationMs, 0.5)) * 1000);
 
-  // Medición de optimización de almacenamiento y red para 10.625 dispositivos
   const uncompactedBytes = totalConcurrentUsers * 48500;
   const compactedBytes = JSON.stringify({
     products: targetDb.products.map(p => ({ id: p.id, s: p.stock, p: p.price, w: p.warehouseDistribution })),
@@ -543,6 +629,8 @@ module.exports = {
   getDb,
   persistStore,
   applyMutation,
+  getPublicCatalogProjection,
+  getPrivateOwnerDatabase,
   runEnterpriseStressTest573,
   runEnterpriseStressTest10k: runEnterpriseStressTest573
 };

@@ -406,11 +406,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 2. Buscador de texto
+  // 2. Buscador de texto con sanitización estricta (Zero-Trust: sin etiquetas ni scripts, max 60 caracteres)
   const searchInput = document.getElementById('shopSearchInput');
   if (searchInput) {
     searchInput.addEventListener('input', e => {
-      filterState.search = e.target.value;
+      const sanitized = e.target.value.replace(/<[^>]*>/g, '').replace(/[;'"\\$]/g, '').slice(0, 60);
+      if (sanitized !== e.target.value) {
+        e.target.value = sanitized;
+      }
+      filterState.search = sanitized;
       renderCatalog();
     });
   }

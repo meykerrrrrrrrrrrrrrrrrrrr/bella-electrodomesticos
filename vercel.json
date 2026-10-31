@@ -3,18 +3,24 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/api/auth", "destination": "/api/auth.js" },
+    { "source": "/api/admin-db", "destination": "/api/admin-db.js" },
     { "source": "/api/state", "destination": "/api/state.js" },
     { "source": "/api/sync", "destination": "/api/sync.js" },
-    { "source": "/api/stress-test", "destination": "/api/stress-test.js" }
+    { "source": "/api/stress-test", "destination": "/api/stress-test.js" },
+    { "source": "/api/_:path*", "destination": "/404.html" },
+    { "source": "/.private_db/:path*", "destination": "/404.html" },
+    { "source": "/data/:path*", "destination": "/404.html" }
   ],
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, If-None-Match" },
-        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, If-None-Match, Authorization, X-Bella-Owner-Token, X-Bella-Api-Key" },
+        { "key": "Cache-Control", "value": "no-store, max-age=0" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     }
   ]

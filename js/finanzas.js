@@ -950,6 +950,34 @@ document.addEventListener('DOMContentLoaded', () => {
     btnStressTest.addEventListener('click', () => executeStressTest573(true));
   }
 
+  // Botón de Auditoría de Base de Datos Privada del Servidor
+  const btnAuditServerTop = document.getElementById('btnAuditServerDbTop');
+  if (btnAuditServerTop) {
+    btnAuditServerTop.addEventListener('click', async () => {
+      const apiBase = window.CloudSync ? window.CloudSync.getApiBase() : window.location.origin;
+      const headers = window.CloudSync ? window.CloudSync.getAuthHeaders() : {};
+      try {
+        const res = await fetch(`${apiBase}/api/admin-db`, { headers });
+        const json = await res.json();
+        if (res.ok && json.ok) {
+          alert(`🔒 AUDITORÍA DE SEGURIDAD DEL SERVIDOR EXITOSA:\n\n` +
+            `• Estado de Base de Datos: ${json.securityAudit.databaseVisibility}\n` +
+            `• Cifrado en disco: ${json.securityAudit.encryptionAtRest}\n` +
+            `• API Keys en el código cliente: CERO (Protegidas en process.env)\n` +
+            `• Variables configuradas en servidor:\n` +
+            `   - BELLA_API_KEY: ${json.securityAudit.configuredKeys.BELLA_API_KEY}\n` +
+            `   - BELLA_OWNER_ACCESS_CODE: ${json.securityAudit.configuredKeys.BELLA_OWNER_ACCESS_CODE}\n` +
+            `   - BELLA_DB_ENCRYPTION_KEY: ${json.securityAudit.configuredKeys.BELLA_DB_ENCRYPTION_KEY}\n` +
+            `• Registros de base de datos protegidos: ${json.database.transactions.length} transacciones / ${json.database.products.length} productos.`);
+        } else {
+          alert(`🔒 ACCESO DENEGADO:\n\n${json.error || 'La base de datos es privada del servidor y solo el propietario autenticado con variables de entorno puede verla.'}`);
+        }
+      } catch (e) {
+        alert('Error al consultar el servidor privado.');
+      }
+    });
+  }
+
   window.initFinancialDashboard = initFinancialDashboard;
   window.executeStressTest573 = executeStressTest573;
 

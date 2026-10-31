@@ -159,22 +159,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Formulario de Pedido Directo
+  // Formulario de Pedido Directo con Validación Estricta Zero-Trust
   const customerNameInput = document.getElementById('orderCustomerName');
   const customerCityInput = document.getElementById('orderCustomerCity');
   const qtyInput = document.getElementById('orderQtyInput');
   const hubSelect = document.getElementById('orderHubSelect');
   const orderBtn = document.getElementById('btnPlaceOrder');
 
+  // Filtro preventivo en tiempo real mientras el usuario escribe
+  if (customerNameInput) {
+    customerNameInput.addEventListener('input', e => {
+      const sanitized = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.]/g, '').slice(0, 50);
+      if (sanitized !== e.target.value) e.target.value = sanitized;
+    });
+  }
+  if (customerCityInput) {
+    customerCityInput.addEventListener('input', e => {
+      const sanitized = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.()\-]/g, '').slice(0, 40);
+      if (sanitized !== e.target.value) e.target.value = sanitized;
+    });
+  }
+
   if (orderBtn) {
     orderBtn.addEventListener('click', () => {
-      const qty = parseInt(qtyInput.value, 10) || 1;
-      const hub = hubSelect.value || 'Centro';
-      const custName = (customerNameInput?.value || '').trim() || 'Cliente Web';
-      const custCity = (customerCityInput?.value || '').trim() || (hub === 'Centro' ? 'Bogotá D.C.' : hub === 'Norte' ? 'Medellín' : hub === 'Sur' ? 'Cali' : 'Barranquilla');
+      const rawQty = qtyInput?.value;
+      const qty = parseInt(rawQty, 10);
+      const hub = (hubSelect?.value || 'Centro').trim();
+      const custName = (customerNameInput?.value || '').trim();
+      const custCity = (customerCityInput?.value || '').trim();
 
-      if (qty <= 0) {
-        showToast('Por favor ingrese una cantidad válida mayor a 0.', true);
+      // Validación estricta Zero-Trust de inputs: no permitir patrones maliciosos ni valores fuera de rango
+      const DANGEROUS_RX = /[<>{};$'"\\]|javascript:|data:/i;
+      if (DANGEROUS_RX.test(custName) || DANGEROUS_RX.test(custCity)) {
+        showToast('Entrada rechazada: caracteres especiales o comandos no permitidos en el formulario.', true);
+        return;
+      }
+
+      if (!custName || custName.length < 3 || custName.length > 50 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.]{3,50}$/.test(custName)) {
+        showToast('Nombre inválido: debe contener entre 3 y 50 letras y espacios (sin caracteres extraños).', true);
+        customerNameInput?.focus();
+        return;
+      }
+
+      if (!custCity || custCity.length < 2 || custCity.length > 40 || !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.()\-]{2,40}$/.test(custCity)) {
+        showToast('Ciudad inválida: debe contener entre 2 y 40 caracteres (solo letras y espacios).', true);
+        customerCityInput?.focus();
+        return;
+      }
+
+      if (isNaN(qty) || qty < 1 || qty > 10) {
+        showToast('Cantidad inválida: la compra máxima por pedido en línea es de 1 a 10 unidades.', true);
+        qtyInput?.focus();
+        return;
+      }
+
+      const allowedHubs = ['Centro', 'Norte', 'Sur', 'Costa'];
+      if (!allowedHubs.includes(hub)) {
+        showToast('Bodega seleccionada no permitida.', true);
         return;
       }
 
